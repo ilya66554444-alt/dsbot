@@ -12,7 +12,7 @@
 	"Офицер 1": {"password": "aof-492f-vbs48-fjar#LSPD", "rank": "офицер", "rp_name": "Шеф", "badge": "LSPD#7026"},
 	"Офицер 2": {"password": "aa2k-f28f-cbak-483#LSPD", "rank": "офицер", "rp_name": "Шеф", "badge": "LSPD#7035"},
 	"лейтенант (совладелец)": {"password": "admin-582fjak-5925#ADMIN", "rank": "лейтенант", "rp_name": "Шеф", "badge": "LSPD#1000"},
-	"владелец": {"password": "root-4926aFJr582LAPON#ADMIN", "rank": "лейтенант", "rp_name": "Василий", "badge": "LSPD#001"},
+	"владелец": {"password": "root-4926aFJr582LAPON#ADMIN", "rank": "лейтенант", "rp_name": "Василий", "badge": "LSPD#001"}
 	
     }
 }
