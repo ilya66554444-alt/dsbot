@@ -488,7 +488,7 @@
 </div>
 
 <script>
-    const API = 'http://localhost:5000/api';
+    const API = 'https://dsbot-ysfs.onrender.com';
     let password = '';
 
     // Часы
@@ -512,22 +512,50 @@
     }
 
     // Логин
-    function login() {
-        password = document.getElementById('passwordInput').value;
-        fetch(`${API}/auth`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({password})
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'flex';
-                loadAll();
-            } else { toast('Неверный пароль', 'error'); }
-        });
-    }
+    let currentModerator = null;
+
+function login() {
+    const username = document.getElementById('loginInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    fetch(`${API}/auth`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({username, password})
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            currentModerator = data.moderator;
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainApp').style.display = 'flex';
+            
+            // Показываем, кто зашёл
+            const statusEl = document.querySelector('.status-bar');
+            if (statusEl) {
+                statusEl.innerHTML = `
+                    <span class="time" id="liveTime">12:00</span>
+                    <span>👮 ${currentModerator.rp_name} (${currentModerator.badge})</span>
+                `;
+            }
+            
+            // Применяем права
+            if (!currentModerator.permissions.can_wanted) {
+                const wantedTab = document.querySelector('[data-tab="wanted"]');
+                if (wantedTab) wantedTab.style.display = 'none';
+            }
+            if (!currentModerator.permissions.can_audit) {
+                const auditTab = document.querySelector('[data-tab="audit"]');
+                if (auditTab) auditTab.style.display = 'none';
+            }
+            window._canClear = currentModerator.permissions.can_clear;
+            
+            loadAll();
+        } else {
+            toast('Неверный логин или пароль', 'error');
+        }
+    });
+}
 
     // Табы
     function switchTab(tab) {
