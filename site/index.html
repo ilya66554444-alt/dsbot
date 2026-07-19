@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LSPD Планшет v2.0</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0a0a14;
+            --surface: #111122;
+            --border: #1e1e35;
+            --text: #e0e0e0;
+            --text-secondary: #888;
+            --accent: #e94560;
+            --accent-glow: rgba(233, 69, 96, 0.25);
+            --success: #00e676;
+            --warning: #ffa000;
+            --danger: #ff1744;
+            --info: #448aff;
+            --radius: 20px;
+            --inner-radius: 12px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        :root.light {
+            --bg: #f0f2f5;
+            --surface: #ffffff;
+            --border: #e0e0e0;
+            --text: #1a1a1a;
+            --text-secondary: #666;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #000;
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            transition: background 0.4s;
+            background-image: radial-gradient(ellipse at center, #1a1a2e 0%, #000 100%);
+        }
+
+        .tablet-frame {
+            width: 520px;
+            max-width: 100%;
+            background: #1a1a28;
+            border-radius: 36px;
+            padding: 12px;
+            box-shadow:
+                0 0 0 2px #2a2a3a,
+                0 0 0 6px #111,
+                0 20px 60px rgba(0,0,0,0.8),
+                inset 0 0 0 1px rgba(255,255,255,0.03);
+            position: relative;
+        }
+        :root.light .tablet-frame {
+            background: #d0d0d8;
+            box-shadow: 0 0 0 2px #bbb, 0 0 0 6px #999, 0 20px 60px rgba(0,0,0,0.2);
+        }
+
+        .tablet-screen {
+            background: var(--bg);
+            border-radius: 26px;
+            overflow: hidden;
+            min-height: 750px;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid var(--border);
+            transition: background 0.4s;
+            position: relative;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 20px 4px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+        }
+        .status-bar .time { color: var(--text); font-size: 11px; }
+
+        .header {
+            padding: 4px 20px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header .title-group { text-align: left; }
+        .header .badge {
+            display: inline-block;
+            background: var(--accent);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+        }
+        .header h1 { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; }
+        .header .theme-toggle {
+            width: 32px; height: 32px; border-radius: 50%;
+            background: var(--surface); border: 1px solid var(--border);
+            cursor: pointer; font-size: 16px;
+            display: flex; align-items: center; justify-content: center;
+            transition: var(--transition);
+        }
+        .header .theme-toggle:hover { border-color: var(--accent); }
+
+        .stats-row { display: flex; gap: 6px; padding: 0 16px 8px; }
+        .stat-card {
+            flex: 1; background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--inner-radius); padding: 10px 8px; text-align: center;
+            transition: var(--transition); cursor: pointer;
+        }
+        .stat-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .stat-card .stat-value { font-size: 22px; font-weight: 900; color: var(--accent); }
+        .stat-card .stat-label { font-size: 9px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+        .stat-card.warn .stat-value { color: var(--warning); }
+        .stat-card.info .stat-value { color: var(--info); }
+
+        .tabs-container { padding: 0 16px 4px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch; }
+        .tabs-container::-webkit-scrollbar { display: none; }
+        .tabs { display: inline-flex; gap: 4px; }
+        .tab {
+            padding: 8px 14px; background: var(--surface); border: 1px solid var(--border);
+            color: var(--text-secondary); cursor: pointer; border-radius: 20px;
+            font-size: 11px; font-weight: 600; transition: var(--transition);
+            font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 12px var(--accent-glow); }
+
+        .content-area {
+            flex: 1; overflow-y: auto; padding: 0 16px 12px;
+            -webkit-overflow-scrolling: touch;
+        }
+        .content-area::-webkit-scrollbar { width: 2px; }
+        .content-area::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .section { display: none; animation: fadeSlide 0.3s ease; }
+        .section.active { display: block; }
+
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .desktop-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px 0; }
+        .desktop-icon {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--inner-radius); padding: 16px; text-align: center;
+            cursor: pointer; transition: var(--transition);
+        }
+        .desktop-icon:hover { border-color: var(--accent); transform: scale(1.03); }
+        .desktop-icon .icon { font-size: 32px; margin-bottom: 6px; }
+        .desktop-icon .label { font-size: 12px; font-weight: 600; color: var(--text); }
+
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--inner-radius); padding: 14px; margin-bottom: 10px; }
+        .card h2 { font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--text); }
+        .card h3 { font-size: 13px; font-weight: 600; margin: 12px 0 6px; color: var(--text); }
+        .card .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .card .card-header .card-actions { display: flex; gap: 4px; }
+
+        input, textarea, select {
+            width: 100%; padding: 9px 12px; background: var(--bg);
+            border: 1px solid var(--border); color: var(--text);
+            border-radius: 8px; font-size: 12px; font-family: 'Inter', sans-serif;
+            transition: var(--transition); outline: none; margin-bottom: 6px;
+        }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+        input::placeholder, textarea::placeholder { color: #555; }
+        .input-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .input-row.triple { grid-template-columns: 1fr 1fr 1fr; }
+        .input-row.full { grid-template-columns: 1fr; }
+
+        .btn {
+            padding: 9px 16px; border: none; border-radius: 8px;
+            cursor: pointer; font-size: 12px; font-weight: 600;
+            font-family: 'Inter', sans-serif; transition: var(--transition);
+            width: 100%; text-align: center;
+        }
+        .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 12px var(--accent-glow); }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px var(--accent-glow); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+        .btn-danger:hover { background: var(--danger); color: #fff; }
+        .btn-info { background: transparent; color: var(--info); border: 1px solid var(--info); }
+        .btn-info:hover { background: var(--info); color: #fff; }
+        .btn-warn { background: transparent; color: var(--warning); border: 1px solid var(--warning); }
+        .btn-warn:hover { background: var(--warning); color: #000; }
+        .btn-sm { padding: 5px 10px; font-size: 10px; width: auto; border-radius: 6px; }
+        .btn-xs { padding: 3px 8px; font-size: 9px; width: auto; border-radius: 4px; }
+
+        .list-item {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px 12px; margin: 4px 0;
+            display: flex; justify-content: space-between; align-items: center;
+            transition: var(--transition);
+        }
+        .list-item:hover { border-color: var(--accent); }
+        .list-item .info strong { font-size: 13px; color: var(--text); display: block; }
+        .list-item .info small { font-size: 10px; color: var(--text-secondary); display: block; margin-top: 2px; }
+        .list-item .info .meta { font-size: 9px; color: var(--text-secondary); margin-top: 1px; }
+        .list-item .stars { color: var(--warning); font-size: 11px; letter-spacing: 1px; }
+        .list-item .actions { display: flex; gap: 3px; flex-shrink: 0; margin-left: 8px; }
+        .list-item.danger { border-left: 3px solid var(--danger); }
+        .list-item.warn { border-left: 3px solid var(--warning); }
+
+        .search-box { position: relative; margin-bottom: 8px; }
+        .search-box input { padding-left: 32px; }
+        .search-box .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-70%); color: #555; font-size: 13px; }
+
+        .player-card {
+            background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; padding: 10px; margin: 4px 0;
+            cursor: pointer; transition: var(--transition);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .player-card:hover { border-color: var(--accent); }
+        .player-card .avatar {
+            width: 40px; height: 40px; border-radius: 50%;
+            background: var(--surface); border: 1px solid var(--border);
+            object-fit: cover; flex-shrink: 0;
+        }
+        .player-card .info { flex: 1; }
+        .player-card .nickname { font-weight: 700; color: var(--text); font-size: 13px; }
+        .player-card .rp-info { font-size: 10px; color: var(--text-secondary); margin-top: 2px; }
+
+        .modal-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1500; backdrop-filter: blur(4px);
+        }
+        .modal {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 20px;
+            width: 440px; max-width: 92vw; max-height: 80vh; overflow-y: auto;
+        }
+        .modal h2 { font-size: 16px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+        .modal .close-btn { float: right; background: none; border: none; color: var(--text); font-size: 20px; cursor: pointer; padding: 0 4px; }
+        .modal .modal-avatar { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); margin-bottom: 8px; }
+
+        .toast {
+            position: fixed; top: 12px; right: 12px; padding: 10px 18px;
+            border-radius: 10px; font-weight: 600; font-size: 12px;
+            z-index: 2000; opacity: 0; transform: translateX(100px);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: var(--surface); border: 1px solid var(--border);
+            color: var(--text); box-shadow: 0 8px 24px rgba(0,0,0,0.5); max-width: 300px;
+        }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { border-color: var(--success); color: var(--success); }
+        .toast.error { border-color: var(--danger); color: var(--danger); }
+        .toast.warn { border-color: var(--warning); color: var(--warning); }
+
+        .article-tag {
+            display: inline-block; background: rgba(68, 138, 255, 0.15);
+            color: var(--info); padding: 2px 8px; border-radius: 10px;
+            font-size: 10px; font-weight: 600; cursor: pointer;
+            margin-right: 4px; border: 1px solid rgba(68, 138, 255, 0.3);
+        }
+        .article-tag:hover { background: rgba(68, 138, 255, 0.25); }
+
+        .home-btn { width: 4px; height: 4px; border-radius: 50%; background: #333; margin: 8px auto 4px; }
+        :root.light .home-btn { background: #bbb; }
+
+        .login-overlay {
+            position: absolute; inset: 0; background: var(--bg);
+            display: flex; justify-content: center; align-items: center;
+            border-radius: 26px; z-index: 20;
+        }
+        .login-box { text-align: center; padding: 30px; }
+        .login-box .shield { font-size: 56px; margin-bottom: 12px; }
+        .login-box h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+        .login-box .subtitle { font-size: 12px; color: var(--text-secondary); margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+
+<div class="tablet-frame" id="tabletFrame">
+    <div class="tablet-screen" id="tabletScreen">
+        <!-- LOGIN -->
+        <div class="login-overlay" id="loginScreen">
+            <div class="login-box">
+                <div class="shield">🛡️</div>
+                <h2>LSPD Доступ</h2>
+                <p class="subtitle">Полицейский планшет v2.0</p>
+                <input type="password" id="passwordInput" placeholder="Пароль" style="margin-bottom:10px">
+                <button class="btn btn-primary" onclick="login()">🔐 Авторизация</button>
+            </div>
+        </div>
+
+        <!-- MAIN APP -->
+        <div id="mainApp" style="display:none; flex-direction:column; height:100%">
+            <div class="status-bar">
+                <span class="time" id="liveTime">12:00</span>
+                <span>📶 🔋 LSPD</span>
+            </div>
+            <div class="header">
+                <div class="title-group">
+                    <div class="badge">Los Santos Police</div>
+                    <h1>Планшет</h1>
+                </div>
+                <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+            </div>
+
+            <div class="stats-row" id="statsRow">
+                <div class="stat-card" onclick="switchTab('fines')"><div class="stat-value" id="statFines">0</div><div class="stat-label">Штрафов</div></div>
+                <div class="stat-card warn" onclick="switchTab('wanted')"><div class="stat-value" id="statWanted">0</div><div class="stat-label">В розыске</div></div>
+                <div class="stat-card" onclick="switchTab('players')"><div class="stat-value" id="statPlayers">0</div><div class="stat-label">В базе</div></div>
+                <div class="stat-card info" onclick="switchTab('vehicles')"><div class="stat-value" id="statVehicles">0</div><div class="stat-label">Авто</div></div>
+            </div>
+
+            <div class="tabs-container">
+                <div class="tabs" id="tabsContainer">
+                    <button class="tab active" data-tab="desktop">🏠</button>
+                    <button class="tab" data-tab="fines">📋 Штрафы</button>
+                    <button class="tab" data-tab="wanted">🚨 Розыск</button>
+                    <button class="tab" data-tab="players">👥 База</button>
+                    <button class="tab" data-tab="warnings">⚠️ Предупр.</button>
+                    <button class="tab" data-tab="vehicles">🚗 Авто</button>
+                    <button class="tab" data-tab="articles">📖 Кодекс</button>
+                    <button class="tab" data-tab="audit">📝 Аудит</button>
+                </div>
+            </div>
+
+            <div class="content-area" id="contentArea">
+                <div id="toast" class="toast"></div>
+
+                <!-- DESKTOP -->
+                <div class="section active" id="desktopSection">
+                    <div class="desktop-grid">
+                        <div class="desktop-icon" onclick="switchTab('fines')"><div class="icon">📋</div><div class="label">Выписать штраф</div></div>
+                        <div class="desktop-icon" onclick="switchTab('wanted')"><div class="icon">🚨</div><div class="label">Объявить розыск</div></div>
+                        <div class="desktop-icon" onclick="switchTab('players')"><div class="icon">👤</div><div class="label">Поиск игрока</div></div>
+                        <div class="desktop-icon" onclick="switchTab('vehicles')"><div class="icon">🚗</div><div class="label">Поиск по номеру</div></div>
+                        <div class="desktop-icon" onclick="switchTab('warnings')"><div class="icon">⚠️</div><div class="label">Предупреждение</div></div>
+                        <div class="desktop-icon" onclick="switchTab('articles')"><div class="icon">📖</div><div class="label">Кодекс</div></div>
+                    </div>
+                    <div class="card">
+                        <h3>⚡ Быстрые действия</h3>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                            <button class="btn btn-info btn-sm" onclick="quickExport('fines')">📥 Экспорт штрафов</button>
+                            <button class="btn btn-info btn-sm" onclick="quickExport('players')">📥 Экспорт базы</button>
+                            <button class="btn btn-info btn-sm" onclick="quickExport('wanted')">📥 Экспорт розыска</button>
+                            <button class="btn btn-info btn-sm" onclick="quickExport('vehicles')">📥 Экспорт авто</button>
+                        </div>
+                    </div>
+                    <div class="card" id="alertCard" style="display:none;">
+                        <h3>🔴 Активные розыски 4+ звёзд</h3>
+                        <div id="highAlertList"></div>
+                    </div>
+                </div>
+
+                <!-- FINES -->
+                <div class="section" id="finesSection">
+                    <div class="card">
+                        <div class="card-header"><h2>Выписать штраф</h2></div>
+                        <input type="text" id="fineNickname" placeholder="Roblox ник">
+                        <div class="input-row">
+                            <select id="fineArticle" onchange="onArticleSelect()"><option value="">Без статьи</option></select>
+                            <input type="text" id="fineTime" placeholder="Время (14:32)">
+                        </div>
+                        <input type="text" id="fineReason" placeholder="Причина">
+                        <input type="text" id="fineIssuer" value="LSPD#5816">
+                        <button class="btn btn-primary" onclick="addFine()">📋 Выписать штраф</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Список штрафов</h3><div class="card-actions"><button class="btn btn-info btn-xs" onclick="quickExport('fines')">📥</button></div></div>
+                        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="fineSearch" placeholder="Поиск..." oninput="loadFines()"></div>
+                        <div id="finesList"></div>
+                    </div>
+                </div>
+
+                <!-- WANTED -->
+                <div class="section" id="wantedSection">
+                    <div class="card">
+                        <h2>Объявить в розыск</h2>
+                        <input type="text" id="wantedNickname" placeholder="Roblox ник">
+                        <div class="input-row">
+                            <input type="number" id="wantedStars" value="1" min="0" max="5" placeholder="Звёзды (0-5)">
+                            <input type="text" id="wantedIssuer" value="LSPD#5816">
+                        </div>
+                        <input type="text" id="wantedReason" placeholder="Причина">
+                        <button class="btn btn-primary" onclick="addWanted()">🚨 Объявить в розыск</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>Ориентировки</h3><button class="btn btn-info btn-xs" onclick="quickExport('wanted')">📥</button></div>
+                        <div id="wantedList"></div>
+                    </div>
+                </div>
+
+                <!-- PLAYERS -->
+                <div class="section" id="playersSection">
+                    <div class="card">
+                        <div class="card-header"><h2>База игроков</h2><button class="btn btn-info btn-xs" onclick="quickExport('players')">📥 Экспорт</button></div>
+                        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="playerSearch" placeholder="Ник, RP-имя, заметки..." oninput="loadPlayers()"></div>
+                        <div id="playersList"></div>
+                    </div>
+                </div>
+
+                <!-- WARNINGS -->
+                <div class="section" id="warningsSection">
+                    <div class="card">
+                        <h2>Вынести предупреждение</h2>
+                        <input type="text" id="warnNickname" placeholder="Roblox ник">
+                        <div class="input-row">
+                            <select id="warnType"><option value="verbal">🗣 Устное</option><option value="written">📝 Письменное</option></select>
+                            <input type="text" id="warnIssuer" value="LSPD#5816">
+                        </div>
+                        <input type="text" id="warnReason" placeholder="Причина">
+                        <button class="btn btn-warn" onclick="addWarning()">⚠️ Вынести предупреждение</button>
+                    </div>
+                    <div class="card">
+                        <h3>Список предупреждений</h3>
+                        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="warnSearch" placeholder="Поиск..." oninput="loadWarnings()"></div>
+                        <div id="warningsList"></div>
+                    </div>
+                </div>
+
+                <!-- VEHICLES -->
+                <div class="section" id="vehiclesSection">
+                    <div class="card">
+                        <h2>Добавить ТС</h2>
+                        <div class="input-row triple">
+                            <input type="text" id="vehPlate" placeholder="Госномер *">
+                            <input type="text" id="vehModel" placeholder="Модель">
+                            <input type="text" id="vehColor" placeholder="Цвет">
+                        </div>
+                        <input type="text" id="vehOwner" placeholder="Владелец (Roblox ник)">
+                        <button class="btn btn-primary" onclick="addVehicle()">🚗 Добавить</button>
+                    </div>
+                    <div class="card">
+                        <div class="card-header"><h3>База ТС</h3><button class="btn btn-info btn-xs" onclick="quickExport('vehicles')">📥</button></div>
+                        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="vehSearch" placeholder="Госномер, модель, владелец..." oninput="loadVehicles()"></div>
+                        <div id="vehiclesList"></div>
+                    </div>
+                </div>
+
+                <!-- ARTICLES -->
+                <div class="section" id="articlesSection">
+                    <div class="card">
+                        <h2>📖 Кодекс нарушений</h2>
+                        <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="articleSearch" placeholder="Поиск по статьям..." oninput="loadArticles()"></div>
+                        <div id="articlesList"></div>
+                    </div>
+                </div>
+
+                <!-- AUDIT -->
+                <div class="section" id="auditSection">
+                    <div class="card">
+                        <div class="card-header"><h2>📝 Аудит действий</h2><button class="btn btn-info btn-xs" onclick="loadAudit()">🔄</button></div>
+                        <div class="input-row">
+                            <select id="auditTypeFilter" onchange="loadAudit()">
+                                <option value="">Все действия</option>
+                                <option value="fine_add">Штрафы</option>
+                                <option value="wanted_add">Розыски</option>
+                                <option value="warning_add">Предупреждения</option>
+                                <option value="player_update">Игроки</option>
+                                <option value="vehicle_add">Транспорт</option>
+                                <option value="clear_data">Очистки</option>
+                            </select>
+                            <input type="number" id="auditLimit" value="50" min="10" max="500" placeholder="Лимит" onchange="loadAudit()">
+                        </div>
+                        <div id="auditList"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="home-btn"></div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="playerModal" style="display:none" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="playerModalContent"></div>
+</div>
+
+<script>
+    const API = 'http://localhost:5000/api';
+    let password = '';
+
+    // Часы
+    function updateClock() {
+        document.getElementById('liveTime').textContent = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'});
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    // Тема
+    function toggleTheme() {
+        document.documentElement.classList.toggle('light');
+        localStorage.setItem('theme', document.documentElement.classList.contains('light') ? 'light' : 'dark');
+    }
+    if (localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light');
+
+    // Toast
+    function toast(text, type) {
+        const t = document.getElementById('toast');
+        t.textContent = text; t.className = `toast ${type} show`;
+        setTimeout(() => t.className = 'toast', 3000);
+    }
+
+    // Логин
+    function login() {
+        password = document.getElementById('passwordInput').value;
+        fetch(`${API}/auth`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({password})
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'flex';
+                loadAll();
+            } else { toast('Неверный пароль', 'error'); }
+        });
+    }
+
+    // Табы
+    function switchTab(tab) {
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+        const tabBtn = document.querySelector(`[data-tab="${tab}"]`);
+        if (tabBtn) tabBtn.classList.add('active');
+        const section = document.getElementById(tab + 'Section');
+        if (section) section.classList.add('active');
+        if (tab === 'fines') loadFines();
+        if (tab === 'wanted') loadWanted();
+        if (tab === 'players') loadPlayers();
+        if (tab === 'warnings') loadWarnings();
+        if (tab === 'vehicles') loadVehicles();
+        if (tab === 'articles') loadArticles();
+        if (tab === 'audit') loadAudit();
+        if (tab === 'desktop') loadHighAlerts();
+    }
+
+    function loadAll() { loadStats(); loadFines(); loadWanted(); loadPlayers(); loadHighAlerts(); loadArticlesIntoSelect(); }
+
+    function loadStats() {
+        fetch(`${API}/stats`)
+        .then(r => r.json())
+        .then(s => {
+            document.getElementById('statFines').textContent = s.total_fines;
+            document.getElementById('statWanted').textContent = s.total_wanted;
+            document.getElementById('statPlayers').textContent = s.total_players;
+            document.getElementById('statVehicles').textContent = s.total_vehicles || 0;
+        });
+    }
+
+    // Экспорт
+    function quickExport(type) {
+        window.open(`${API}/export/${type}`, '_blank');
+        toast('📥 Экспорт начат', 'success');
+    }
+
+    // ШТРАФЫ
+    function addFine() {
+        const data = {
+            nickname: document.getElementById('fineNickname').value.trim(),
+            reason: document.getElementById('fineReason').value.trim(),
+            article: document.getElementById('fineArticle').value,
+            time: document.getElementById('fineTime').value.trim() || undefined,
+            issued_by: document.getElementById('fineIssuer').value.trim() || 'LSPD#5816'
+        };
+        if (!data.nickname || !data.reason) { toast('Заполните ник и причину', 'error'); return; }
+        fetch(`${API}/fines`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                toast(`✅ Штраф #${res.fine.id} выписан`, 'success');
+                document.getElementById('fineNickname').value = '';
+                document.getElementById('fineReason').value = '';
+                loadFines(); loadStats();
+            } else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка соединения', 'error'));
+    }
+
+    function deleteFine(id) {
+        if (!confirm('Снять штраф?')) return;
+        fetch(`${API}/fines/${id}`, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) { toast('🗑️ Штраф снят', 'success'); loadFines(); loadStats(); }
+            else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка при удалении', 'error'));
+    }
+
+    function loadFines() {
+        const search = document.getElementById('fineSearch')?.value || '';
+        fetch(`${API}/fines?search=${encodeURIComponent(search)}`)
+        .then(r => r.json())
+        .then(fines => {
+            const list = document.getElementById('finesList');
+            if (!fines.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет штрафов</p>'; return; }
+            list.innerHTML = [...fines].reverse().map(f => `
+                <div class="list-item ${f.expired ? 'warn' : ''}">
+                    <div class="info">
+                        <strong>#${f.id} 👤 ${f.nickname} ${f.expired ? '(погашен)' : ''}</strong>
+                        <small>📋 ${f.reason} | 🕐 ${f.time}</small>
+                        <div class="meta">👮 ${f.issued_by}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteFine(${f.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    // РОЗЫСК
+    function addWanted() {
+        const data = {
+            nickname: document.getElementById('wantedNickname').value.trim(),
+            reason: document.getElementById('wantedReason').value.trim(),
+            stars: parseInt(document.getElementById('wantedStars').value) || 1,
+            issued_by: document.getElementById('wantedIssuer').value.trim() || 'LSPD#5816'
+        };
+        if (!data.nickname || !data.reason) { toast('Заполните ник и причину', 'error'); return; }
+        fetch(`${API}/wanted`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                toast(`🚨 Розыск #${res.wanted.id} объявлен`, 'success');
+                document.getElementById('wantedNickname').value = '';
+                document.getElementById('wantedReason').value = '';
+                loadWanted(); loadStats(); loadHighAlerts();
+                if (data.stars >= 4) {
+                    document.getElementById('tabletFrame').classList.add('alert-flash');
+                    setTimeout(() => document.getElementById('tabletFrame').classList.remove('alert-flash'), 1500);
+                }
+            } else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка соединения', 'error'));
+    }
+
+    function deleteWanted(id) {
+        if (!confirm('Снять розыск?')) return;
+        fetch(`${API}/wanted/${id}`, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) { toast('🔓 Розыск снят', 'success'); loadWanted(); loadStats(); loadHighAlerts(); }
+            else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка при удалении', 'error'));
+    }
+
+    function loadWanted() {
+        fetch(`${API}/wanted`)
+        .then(r => r.json())
+        .then(wanted => {
+            const list = document.getElementById('wantedList');
+            if (!wanted.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Розыск пуст</p>'; return; }
+            list.innerHTML = [...wanted].reverse().map(w => `
+                <div class="list-item ${w.stars >= 4 ? 'danger' : ''}">
+                    <div class="info">
+                        <strong>#${w.id} 👤 ${w.nickname}</strong>
+                        <small>📋 ${w.reason}</small>
+                        <span class="stars">${'⭐'.repeat(w.stars)}${'☆'.repeat(5-w.stars)} ${w.stars}/5</span>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteWanted(${w.id})">🔓 Снять</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function loadHighAlerts() {
+        fetch(`${API}/wanted`)
+        .then(r => r.json())
+        .then(wanted => {
+            const high = wanted.filter(w => w.stars >= 4);
+            const card = document.getElementById('alertCard');
+            const list = document.getElementById('highAlertList');
+            if (high.length) {
+                card.style.display = 'block';
+                list.innerHTML = high.map(w => `
+                    <div class="list-item danger">
+                        <div class="info">
+                            <strong>💀 ${w.nickname}</strong>
+                            <small>${w.reason} | ${'⭐'.repeat(w.stars)}</small>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // ПРЕДУПРЕЖДЕНИЯ
+    function addWarning() {
+        const data = {
+            nickname: document.getElementById('warnNickname').value.trim(),
+            reason: document.getElementById('warnReason').value.trim(),
+            type: document.getElementById('warnType').value,
+            issued_by: document.getElementById('warnIssuer').value.trim() || 'LSPD#5816'
+        };
+        if (!data.nickname || !data.reason) { toast('Заполните ник и причину', 'error'); return; }
+        fetch(`${API}/warnings`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                let msg = `⚠️ Предупреждение вынесено`;
+                if (res.auto_wanted) msg += ' | 🚨 Авто-розыск!';
+                toast(msg, res.auto_wanted ? 'warn' : 'success');
+                document.getElementById('warnNickname').value = '';
+                document.getElementById('warnReason').value = '';
+                loadWarnings(); loadStats();
+                if (res.auto_wanted) { loadWanted(); loadHighAlerts(); }
+            } else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка соединения', 'error'));
+    }
+
+    function deleteWarning(id) {
+        if (!confirm('Удалить предупреждение?')) return;
+        fetch(`${API}/warnings/${id}`, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) { toast('🗑️ Предупреждение удалено', 'success'); loadWarnings(); loadStats(); }
+        });
+    }
+
+    function loadWarnings() {
+        const search = document.getElementById('warnSearch')?.value || '';
+        fetch(`${API}/warnings?search=${encodeURIComponent(search)}`)
+        .then(r => r.json())
+        .then(warnings => {
+            const list = document.getElementById('warningsList');
+            if (!warnings.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет предупреждений</p>'; return; }
+            list.innerHTML = [...warnings].reverse().map(w => `
+                <div class="list-item ${w.type === 'written' ? 'warn' : ''}">
+                    <div class="info">
+                        <strong>#${w.id} 👤 ${w.nickname}</strong>
+                        <small>${w.type === 'written' ? '📝 Письменное' : '🗣 Устное'} | ${w.reason}</small>
+                        <div class="meta">👮 ${w.issued_by}</div>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteWarning(${w.id})">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    // ТРАНСПОРТ
+    function addVehicle() {
+        const data = {
+            plate: document.getElementById('vehPlate').value.trim().toUpperCase(),
+            model: document.getElementById('vehModel').value.trim(),
+            color: document.getElementById('vehColor').value.trim(),
+            owner_nickname: document.getElementById('vehOwner').value.trim()
+        };
+        if (!data.plate) { toast('Введите госномер', 'error'); return; }
+        fetch(`${API}/vehicles`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                toast('🚗 ТС добавлено', 'success');
+                document.getElementById('vehPlate').value = '';
+                document.getElementById('vehModel').value = '';
+                document.getElementById('vehColor').value = '';
+                document.getElementById('vehOwner').value = '';
+                loadVehicles(); loadStats();
+            } else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка соединения', 'error'));
+    }
+
+    function deleteVehicle(plate) {
+        if (!confirm('Удалить ТС из базы?')) return;
+        fetch(`${API}/vehicles/${encodeURIComponent(plate)}`, {method: 'DELETE'})
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) { toast('🗑️ ТС удалено', 'success'); loadVehicles(); loadStats(); }
+        });
+    }
+
+    function loadVehicles() {
+        const search = document.getElementById('vehSearch')?.value || '';
+        fetch(`${API}/vehicles?search=${encodeURIComponent(search)}`)
+        .then(r => r.json())
+        .then(vehicles => {
+            const list = document.getElementById('vehiclesList');
+            if (!vehicles.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет ТС</p>'; return; }
+            list.innerHTML = vehicles.map(v => `
+                <div class="list-item">
+                    <div class="info">
+                        <strong>🚗 ${v.plate}</strong>
+                        <small>${v.model || '—'} | ${v.color || '—'} | Владелец: ${v.owner_nickname || '—'}</small>
+                    </div>
+                    <div class="actions">
+                        <button class="btn btn-danger btn-sm" onclick="deleteVehicle('${v.plate}')">🗑️</button>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    // ИГРОКИ
+    function loadPlayers() {
+        const search = document.getElementById('playerSearch')?.value || '';
+        fetch(`${API}/players?search=${encodeURIComponent(search)}`)
+        .then(r => r.json())
+        .then(players => {
+            const list = document.getElementById('playersList');
+            if (!players.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет игроков</p>'; return; }
+            list.innerHTML = players.map(p => `
+                <div class="player-card" onclick="openPlayerProfile('${p.nickname}')">
+                    <img class="avatar" src="${p.photo_url || 'data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%25%22 y=%2255%25%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2240%22>👤</text></svg>'}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect fill=%22%23333%22 width=%22100%22 height=%22100%22/><text x=%2250%25%22 y=%2255%25%22 text-anchor=%22middle%22 fill=%22%23888%22 font-size=%2240%22>👤</text></svg>'">
+                    <div class="info">
+                        <div class="nickname">👤 ${p.nickname}</div>
+                        <div class="rp-info">${p.rp_name ? '🎭 ' + p.rp_name : 'Без RP-имени'} ${p.rp_age ? '| 🎂 ' + p.rp_age : ''}</div>
+                    </div>
+                </div>
+            `).join('');
+        });
+    }
+
+    function openPlayerProfile(nickname) {
+        fetch(`${API}/players/${encodeURIComponent(nickname)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data || !data.player) { toast('Игрок не найден', 'error'); return; }
+            const p = data.player;
+            const fines = data.fines || [];
+            const wanted = data.wanted || [];
+            const warnings = data.warnings || [];
+            const vehicles = data.vehicles || [];
+
+            document.getElementById('playerModalContent').innerHTML = `
+                <button class="close-btn" onclick="closeModal()">✕</button>
+                <div style="text-align:center;">
+                    <img class="modal-avatar" src="${p.photo_url || ''}" onerror="this.style.display='none'">
+                </div>
+                <h2>👤 ${p.nickname}</h2>
+                <div class="input-row">
+                    <input type="text" id="editRpName" value="${p.rp_name || ''}" placeholder="RP-имя">
+                    <input type="text" id="editRpAge" value="${p.rp_age || ''}" placeholder="RP-возраст">
+                </div>
+                <input type="text" id="editNotes" value="${p.notes || ''}" placeholder="Заметки (особые приметы)">
+                <button class="btn btn-primary" onclick="savePlayer('${p.nickname}')" style="margin-bottom:4px">💾 Сохранить</button>
+                <button class="btn btn-danger" onclick="clearPlayerData('${p.nickname}')" style="margin-bottom:12px">🧹 Очистить все данные</button>
+
+                <h3>📋 Штрафы (${fines.length})</h3>
+                ${fines.length ? fines.map(f => `<div class="list-item"><div class="info"><strong>#${f.id}</strong> ${f.reason} <small>${f.time}</small></div></div>`).join('') : '<p style="color:#888">Штрафов нет</p>'}
+
+                <h3>🚨 Розыск (${wanted.length})</h3>
+                ${wanted.length ? wanted.map(w => `<div class="list-item danger"><div class="info"><strong>#${w.id}</strong> ${w.reason} <span class="stars">${'⭐'.repeat(w.stars)}</span></div></div>`).join('') : '<p style="color:#888">Не в розыске</p>'}
+
+                <h3>⚠️ Предупреждения (${warnings.length})</h3>
+                ${warnings.length ? warnings.map(w => `<div class="list-item"><div class="info"><strong>#${w.id}</strong> ${w.type === 'written' ? '📝' : '🗣'} ${w.reason}</div></div>`).join('') : '<p style="color:#888">Нет предупреждений</p>'}
+
+                <h3>🚗 Транспорт (${vehicles.length})</h3>
+                ${vehicles.length ? vehicles.map(v => `<div class="list-item"><div class="info"><strong>${v.plate}</strong> ${v.model || ''} ${v.color || ''}</div></div>`).join('') : '<p style="color:#888">Нет ТС</p>'}
+            `;
+            document.getElementById('playerModal').style.display = 'flex';
+        });
+    }
+
+    function savePlayer(nickname) {
+        const data = {
+            rp_name: document.getElementById('editRpName').value.trim(),
+            rp_age: document.getElementById('editRpAge').value.trim(),
+            notes: document.getElementById('editNotes')?.value.trim() || ''
+        };
+        fetch(`${API}/players/${encodeURIComponent(nickname)}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) { toast('💾 Данные сохранены', 'success'); closeModal(); loadPlayers(); loadStats(); }
+        });
+    }
+
+    function clearPlayerData(nickname) {
+        if (!confirm(`Точно очистить ВСЕ данные игрока ${nickname}?`)) return;
+        fetch(`${API}/players/${encodeURIComponent(nickname)}/clear`, {method: 'POST'})
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                toast(`🧹 Очищено! Штрафов: ${res.fines_removed}, розысков: ${res.wanted_removed}, предупреждений: ${res.warnings_removed}`, 'success');
+                closeModal(); loadPlayers(); loadStats();
+            } else { toast(res.error, 'error'); }
+        }).catch(() => toast('Ошибка', 'error'));
+    }
+
+    function closeModal() { document.getElementById('playerModal').style.display = 'none'; }
+
+    // СТАТЬИ
+    function loadArticlesIntoSelect() {
+        fetch(`${API}/articles`)
+        .then(r => r.json())
+        .then(articles => {
+            const select = document.getElementById('fineArticle');
+            select.innerHTML = '<option value="">Без статьи</option>' +
+                articles.map(a => `<option value="${a.id}">${a.id} — ${a.title} ($${a.fine})</option>`).join('');
+        });
+    }
+
+    function onArticleSelect() {
+        const id = document.getElementById('fineArticle').value;
+        if (id) {
+            fetch(`${API}/articles`)
+            .then(r => r.json())
+            .then(articles => {
+                const a = articles.find(x => x.id === id);
+                if (a) document.getElementById('fineReason').value = a.title;
+            });
+        }
+    }
+
+    function loadArticles() {
+        const search = (document.getElementById('articleSearch')?.value || '').toLowerCase();
+        fetch(`${API}/articles`)
+        .then(r => r.json())
+        .then(articles => {
+            const filtered = search ? articles.filter(a =>
+                a.id.toLowerCase().includes(search) ||
+                a.title.toLowerCase().includes(search)
+            ) : articles;
+            document.getElementById('articlesList').innerHTML = filtered.map(a => `
+                <div class="list-item">
+                    <div class="info">
+                        <strong><span class="article-tag">${a.id}</span> ${a.title}</strong>
+                        <small>💰 Штраф: $${a.fine}</small>
+                    </div>
+                    <button class="btn btn-info btn-sm" onclick="document.getElementById('fineArticle').value='${a.id}';onArticleSelect();switchTab('fines')">Выписать</button>
+                </div>
+            `).join('');
+        });
+    }
+
+    // АУДИТ
+    function loadAudit() {
+        const type = document.getElementById('auditTypeFilter')?.value || '';
+        const limit = document.getElementById('auditLimit')?.value || 50;
+        fetch(`${API}/audit?limit=${limit}&type=${encodeURIComponent(type)}`)
+        .then(r => r.json())
+        .then(logs => {
+            const list = document.getElementById('auditList');
+            if (!logs.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет записей</p>'; return; }
+            list.innerHTML = logs.map(l => {
+                const dt = new Date(l.timestamp);
+                const time = dt.toLocaleString('ru-RU');
+                const icons = {
+                    'fine_add': '📋', 'fine_remove': '🗑️',
+                    'wanted_add': '🚨', 'wanted_remove': '🔓',
+                    'warning_add': '⚠️', 'warning_remove': '🗑️',
+                    'player_update': '👤', 'vehicle_add': '🚗',
+                    'vehicle_remove': '🗑️', 'clear_data': '🧹',
+                    'auto_wanted': '🤖'
+                };
+                const icon = icons[l.action_type] || '📝';
+                return `
+                    <div class="list-item">
+                        <div class="info">
+                            <strong>${icon} #${l.id}</strong>
+                            <small>${l.description}</small>
+                            <div class="meta">👮 ${l.moderator} | 🕐 ${time}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        });
+    }
+</script>
+</body>
+</html>
