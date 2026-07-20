@@ -320,7 +320,7 @@
 <!-- MODAL -->
 <div class="modal-overlay" id="playerModal" style="display:none" onclick="if(event.target===this)closeModal()"><div class="modal" id="playerModalContent"></div></div>
 
-<script>
+<>
     const API = 'https://dsbot-ysfs.onrender.com/api';
     let currentModerator = null;
     let loginAttempts = 0, loginLocked = false, currentShift = null;
@@ -488,6 +488,50 @@ function switchTab(tab) {
 
     // AUDIT
     function loadAudit() { var type = document.getElementById('auditTypeFilter')?.value||'', limit = document.getElementById('auditLimit')?.value||50; fetch(API + '/audit?limit=' + limit + '&type=' + type).then(r => r.json()).then(function(logs) { var list = document.getElementById('auditList'); if(!logs.length){ list.innerHTML='<p style="color:#888;text-align:center;padding:12px;">Пусто</p>'; return; } var icons = {fine_add:'📋',fine_remove:'🗑️',wanted_add:'🚨',wanted_remove:'🔓',warning_add:'⚠️',warrant_add:'📜',player_update:'👤',vehicle_add:'🚗',clear_data:'🧹',auto_wanted:'🤖',shift_start:'🟢',shift_end:'🔴'}; list.innerHTML = logs.map(function(l) { var dt = new Date(l.timestamp); return '<div class="list-item"><div><strong>' + (icons[l.action_type]||'📝') + ' #' + l.id + '</strong><small>' + l.description + '</small><div style="font-size:8px;color:var(--text-secondary);">' + l.moderator + ' | ' + dt.toLocaleString('ru-RU') + '</div></div></div>'; }).join(''); }); }
-</script>
+// ВЫХОД
+function logout() {
+    if (!confirm('Выйти из аккаунта?')) return;
+    currentModerator = null;
+    currentShift = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('mainApp').style.display = 'none';
+    document.getElementById('loginInput').value = '';
+    document.getElementById('passwordInput').value = '';
+    toast('👋 Вы вышли из системы', 'success');
+}
+
+// ПРОФИЛЬ
+function openProfile() {
+    if (!currentModerator) return;
+    fetch(API + '/achievements/' + encodeURIComponent(currentModerator.badge))
+    .then(r => r.json())
+    .then(function(data) {
+        var html = '<button onclick="closeModal()" style="float:right;background:none;border:none;color:var(--text);font-size:18px;">✕</button>';
+        html += '<div style="text-align:center;">';
+        html += '<div style="font-size:48px;margin-bottom:6px;">👮</div>';
+        html += '<h2>' + currentModerator.rp_name + '</h2>';
+        html += '<div class="badge-display">' + currentModerator.badge + '</div>';
+        html += '<p style="color:var(--text-secondary);margin-top:4px;">' + currentModerator.rank_name + '</p>';
+        html += '</div>';
+        html += '<div class="card" style="margin-top:10px;">';
+        html += '<h3>📊 Статистика</h3>';
+        html += '<div class="quick-stat"><span>📋</span><div><strong>' + (data.fines||0) + '</strong><div style="font-size:9px;color:var(--text-secondary);">Выписано штрафов</div></div></div>';
+        html += '<div class="quick-stat"><span>🚨</span><div><strong>' + (data.wanted||0) + '</strong><div style="font-size:9px;color:var(--text-secondary);">Объявлено розысков</div></div></div>';
+        html += '<div class="quick-stat"><span>🧹</span><div><strong>' + (data.clears||0) + '</strong><div style="font-size:9px;color:var(--text-secondary);">Очищено игроков</div></div></div>';
+        html += '</div>';
+        if (data.achievements && data.achievements.length) {
+            html += '<div class="card"><h3>🏆 Достижения</h3>';
+            data.achievements.forEach(function(a) { html += '<span class="achieve-badge">' + a + '</span> '; });
+            html += '</div>';
+        }
+        document.getElementById('playerModalContent').innerHTML = html;
+        document.getElementById('playerModal').style.display = 'flex';
+    });
+}
+    
+    
+    
+    
+    </script>
 </body>
 </html>
