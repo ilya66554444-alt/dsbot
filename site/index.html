@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>LSPD Планшет v2.5</title>
+    <title>LSPD Планшет v3.0</title>
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#e94560">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,10 +19,7 @@
             --warning: #ffa000; --danger: #ff1744; --info: #448aff;
             --radius: 20px; --inner-radius: 12px;
         }
-        :root.light {
-            --bg: #f0f2f5; --surface: #fff; --border: #e0e0e0;
-            --text: #1a1a1a; --text-secondary: #666;
-        }
+        :root.light { --bg: #f0f2f5; --surface: #fff; --border: #e0e0e0; --text: #1a1a1a; --text-secondary: #666; }
         * { margin:0; padding:0; box-sizing:border-box; }
         body {
             font-family:'Inter',sans-serif; background:#000; color:var(--text);
@@ -50,11 +47,10 @@
         .tab {
             padding:8px 14px; background:var(--surface); border:1px solid var(--border);
             color:var(--text-secondary); cursor:pointer; border-radius:20px;
-            font-size:11px; font-weight:600; white-space:nowrap; user-select:none;
-            transition:all 0.2s;
+            font-size:11px; font-weight:600; white-space:nowrap; user-select:none; transition:all 0.2s;
         }
         .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .content-area { flex:1; overflow-y:auto; padding:0 16px 12px; }
+        .content-area { flex:1; overflow-y:auto; padding:0 16px 12px; -webkit-overflow-scrolling:touch; }
         .section { display:none; animation:fadeSlide 0.3s ease; }
         .section.active { display:block; }
         @keyframes fadeSlide { from{opacity:0;transform:translateY(6px);} to{opacity:1;transform:translateY(0);} }
@@ -67,14 +63,12 @@
             font-family:'Inter',sans-serif;
         }
         input:disabled, textarea:disabled { opacity:0.5; cursor:not-allowed; background:rgba(255,255,255,0.02); }
-        .btn {
-            padding:9px 16px; border:none; border-radius:8px; cursor:pointer;
-            font-size:12px; font-weight:600; width:100%; text-align:center;
-        }
+        .btn { padding:9px 16px; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:600; width:100%; text-align:center; }
         .btn-primary { background:var(--accent); color:#fff; }
         .btn-danger { background:transparent; color:var(--danger); border:1px solid var(--danger); }
         .btn-info { background:transparent; color:var(--info); border:1px solid var(--info); }
         .btn-warn { background:transparent; color:var(--warning); border:1px solid var(--warning); }
+        .btn-success { background:transparent; color:var(--success); border:1px solid var(--success); }
         .btn-sm { padding:5px 10px; font-size:10px; width:auto; }
         .btn-xs { padding:3px 8px; font-size:9px; width:auto; }
         .list-item {
@@ -117,18 +111,20 @@
         .desktop-icon:hover { border-color:var(--accent); transform:scale(1.03); }
         .desktop-icon .icon { font-size:32px; margin-bottom:6px; }
         .desktop-icon .label { font-size:12px; font-weight:600; }
-        .badge-display {
-            display:inline-block; background:var(--accent); color:#fff;
-            padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700;
-            margin-bottom:8px; letter-spacing:0.5px;
-        }
-        .quick-stat {
-            display:flex; align-items:center; gap:10px; padding:12px;
-            background:var(--bg); border-radius:10px; margin:6px 0;
-        }
+        .badge-display { display:inline-block; background:var(--accent); color:#fff; padding:6px 14px; border-radius:20px; font-size:13px; font-weight:700; margin-bottom:8px; }
+        .quick-stat { display:flex; align-items:center; gap:10px; padding:12px; background:var(--bg); border-radius:10px; margin:6px 0; }
         .quick-stat .qs-icon { font-size:28px; }
         .quick-stat .qs-value { font-size:22px; font-weight:800; color:var(--accent); }
         .quick-stat .qs-label { font-size:10px; color:var(--text-secondary); }
+        .shift-badge {
+            display:inline-block; padding:4px 10px; border-radius:12px; font-size:10px; font-weight:700;
+        }
+        .shift-badge.on { background:rgba(0,230,118,0.15); color:var(--success); border:1px solid var(--success); }
+        .shift-badge.off { background:rgba(255,23,68,0.1); color:var(--danger); border:1px solid var(--danger); }
+        .achieve-badge {
+            display:inline-block; background:rgba(255,160,0,0.15); color:var(--warning);
+            padding:3px 8px; border-radius:10px; font-size:10px; margin:2px;
+        }
     </style>
 </head>
 <body>
@@ -140,7 +136,7 @@
             <div class="login-box">
                 <div class="shield">🛡️</div>
                 <h2>LSPD Доступ</h2>
-                <p class="subtitle" style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Планшет v2.5</p>
+                <p style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">Планшет v3.0</p>
                 <div class="login-error" id="loginError"></div>
                 <div class="login-spinner" id="loginSpinner"></div>
                 <input type="text" id="loginInput" placeholder="Логин" style="margin-bottom:8px" autocomplete="off">
@@ -151,20 +147,21 @@
 
         <!-- MAIN -->
         <div id="mainApp" style="display:none;flex-direction:column;height:100%">
-            <div class="status-bar" id="statusBar"><span class="time" id="liveTime">12:00</span><span>📶 🔋 LSPD</span></div>
+            <div class="status-bar" id="statusBar"><span class="time" id="liveTime">12:00</span><span id="statusRight">📶 🔋 LSPD</span></div>
             <div class="header">
-                <div class="title-group"><div class="badge">Los Santos Police</div><h1>Планшет</h1></div>
-                <button class="theme-toggle" onclick="toggleTheme()" style="width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:16px;">🌓</button>
+                <div class="title-group"><div class="badge">Los Santos Police</div><h1>Планшет v3.0</h1></div>
+                <button onclick="toggleTheme()" style="width:32px;height:32px;border-radius:50%;background:var(--surface);border:1px solid var(--border);cursor:pointer;font-size:16px;">🌓</button>
             </div>
 
             <div class="tabs-outer">
                 <div class="tabs-scroll" id="tabsScroll">
                     <div class="tabs" id="tabsContainer">
-                        <button class="tab active" onclick="switchTab('desktop')">🏠 Главная</button>
+                        <button class="tab active" onclick="switchTab('desktop')">🏠</button>
                         <button class="tab" onclick="switchTab('fines')">📋 Штрафы</button>
                         <button class="tab" onclick="switchTab('wanted')">🚨 Розыск</button>
                         <button class="tab" onclick="switchTab('players')">👥 База</button>
                         <button class="tab" onclick="switchTab('warnings')">⚠️ Предупр.</button>
+                        <button class="tab" onclick="switchTab('warrants')">📜 Ордера</button>
                         <button class="tab" onclick="switchTab('vehicles')">🚗 Авто</button>
                         <button class="tab" onclick="switchTab('articles')">📖 Кодекс</button>
                         <button class="tab" onclick="switchTab('audit')">📝 Аудит</button>
@@ -180,10 +177,20 @@
                     <div style="text-align:center;padding:8px 0;">
                         <div class="badge-display" id="desktopBadge">LSPD#0000</div>
                         <p style="font-size:14px;color:var(--text-secondary);" id="desktopRank">Ранг</p>
+                        <p><span class="shift-badge off" id="shiftBadge">⚫ Не на смене</span></p>
+                        <button class="btn btn-success btn-sm" id="shiftBtn" onclick="toggleShift()">🟢 Начать смену</button>
                     </div>
                     <div class="card">
                         <h3>📊 Сводка</h3>
                         <div id="desktopStats"></div>
+                    </div>
+                    <div class="card" id="achievementsCard" style="display:none;">
+                        <h3>🏆 Достижения</h3>
+                        <div id="achievementsList"></div>
+                    </div>
+                    <div class="card">
+                        <h3>🏅 Доска почёта</h3>
+                        <div id="leaderboardList"></div>
                     </div>
                     <div class="desktop-grid">
                         <div class="desktop-icon" onclick="switchTab('fines')"><div class="icon">📋</div><div class="label">Штраф</div></div>
@@ -191,7 +198,10 @@
                         <div class="desktop-icon" onclick="switchTab('players')"><div class="icon">👤</div><div class="label">Игрок</div></div>
                         <div class="desktop-icon" onclick="switchTab('vehicles')"><div class="icon">🚗</div><div class="label">Авто</div></div>
                         <div class="desktop-icon" onclick="switchTab('warnings')"><div class="icon">⚠️</div><div class="label">Предупр.</div></div>
-                        <div class="desktop-icon" onclick="switchTab('articles')"><div class="icon">📖</div><div class="label">Кодекс</div></div>
+                        <div class="desktop-icon" onclick="switchTab('warrants')"><div class="icon">📜</div><div class="label">Ордер</div></div>
+                    </div>
+                    <div style="text-align:center;padding:12px;color:var(--text-secondary);font-size:10px;">
+                        Свайп влево/вправо — переключение вкладок
                     </div>
                 </div>
 
@@ -202,18 +212,15 @@
                         <input type="text" id="fineNickname" placeholder="Roblox ник">
                         <div style="display:flex;gap:6px;">
                             <select id="fineArticle" onchange="onArticleSelect()" style="flex:1;"><option value="">Без статьи</option></select>
-                            <input type="text" id="fineTime" placeholder="14:32" style="width:80px;flex-shrink:0;">
+                            <input type="text" id="fineTime" placeholder="14:32" style="width:80px;">
                         </div>
                         <input type="text" id="fineReason" placeholder="Причина">
                         <input type="text" id="fineIssuer" disabled placeholder="Ваш бейдж">
-                        <button class="btn btn-primary" onclick="addFine()">📋 Выписать штраф</button>
+                        <button class="btn btn-primary" onclick="addFine()">📋 Выписать</button>
                     </div>
                     <div class="card">
-                        <h3>Список штрафов</h3>
-                        <div class="search-box" style="position:relative;margin-bottom:8px;">
-                            <span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span>
-                            <input type="text" id="fineSearch" placeholder="Поиск..." oninput="loadFines()" style="padding-left:32px;">
-                        </div>
+                        <h3>Список</h3>
+                        <div style="position:relative;margin-bottom:8px;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span><input type="text" id="fineSearch" placeholder="Поиск..." oninput="loadFines()" style="padding-left:32px;"></div>
                         <div id="finesList"></div>
                     </div>
                 </div>
@@ -224,26 +231,20 @@
                         <h2>🚨 Объявить в розыск</h2>
                         <input type="text" id="wantedNickname" placeholder="Roblox ник">
                         <div style="display:flex;gap:6px;">
-                            <input type="number" id="wantedStars" value="1" min="0" max="5" placeholder="0-5" style="width:70px;flex-shrink:0;">
+                            <input type="number" id="wantedStars" value="1" min="0" max="5" style="width:70px;">
                             <input type="text" id="wantedReason" placeholder="Причина" style="flex:1;">
                         </div>
                         <input type="text" id="wantedIssuer" disabled placeholder="Ваш бейдж">
                         <button class="btn btn-primary" onclick="addWanted()">🚨 Объявить</button>
                     </div>
-                    <div class="card">
-                        <h3>Ориентировки</h3>
-                        <div id="wantedList"></div>
-                    </div>
+                    <div class="card"><h3>Ориентировки</h3><div id="wantedList"></div></div>
                 </div>
 
                 <!-- PLAYERS -->
                 <div class="section" id="playersSection">
                     <div class="card">
                         <h2>👥 База игроков</h2>
-                        <div class="search-box" style="position:relative;margin-bottom:8px;">
-                            <span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span>
-                            <input type="text" id="playerSearch" placeholder="Ник, RP-имя..." oninput="loadPlayers()" style="padding-left:32px;">
-                        </div>
+                        <div style="position:relative;margin-bottom:8px;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span><input type="text" id="playerSearch" placeholder="Ник, RP-имя..." oninput="loadPlayers()" style="padding-left:32px;"></div>
                         <div id="playersList"></div>
                     </div>
                 </div>
@@ -254,16 +255,28 @@
                         <h2>⚠️ Предупреждение</h2>
                         <input type="text" id="warnNickname" placeholder="Roblox ник">
                         <div style="display:flex;gap:6px;">
-                            <select id="warnType" style="width:110px;flex-shrink:0;"><option value="verbal">🗣 Устное</option><option value="written">📝 Письменное</option></select>
+                            <select id="warnType" style="width:110px;"><option value="verbal">🗣 Устное</option><option value="written">📝 Письменное</option></select>
                             <input type="text" id="warnReason" placeholder="Причина" style="flex:1;">
                         </div>
                         <input type="text" id="warnIssuer" disabled placeholder="Ваш бейдж">
                         <button class="btn btn-warn" onclick="addWarning()">⚠️ Вынести</button>
                     </div>
+                    <div class="card"><h3>Список</h3><div id="warningsList"></div></div>
+                </div>
+
+                <!-- WARRANTS -->
+                <div class="section" id="warrantsSection">
                     <div class="card">
-                        <h3>Список</h3>
-                        <div id="warningsList"></div>
+                        <h2>📜 Выписать ордер</h2>
+                        <input type="text" id="warrantNickname" placeholder="Roblox ник">
+                        <div style="display:flex;gap:6px;">
+                            <select id="warrantType" style="width:110px;"><option value="search">🔍 Обыск</option><option value="arrest">🔒 Арест</option></select>
+                            <input type="text" id="warrantReason" placeholder="Причина" style="flex:1;">
+                        </div>
+                        <input type="text" id="warrantIssuer" disabled placeholder="Ваш бейдж">
+                        <button class="btn btn-primary" onclick="addWarrant()">📜 Выписать ордер</button>
                     </div>
+                    <div class="card"><h3>Активные ордера</h3><div id="warrantsList"></div></div>
                 </div>
 
                 <!-- VEHICLES -->
@@ -273,17 +286,14 @@
                         <div style="display:flex;gap:6px;">
                             <input type="text" id="vehPlate" placeholder="Госномер *" style="flex:1;">
                             <input type="text" id="vehModel" placeholder="Модель" style="flex:1;">
-                            <input type="text" id="vehColor" placeholder="Цвет" style="width:80px;flex-shrink:0;">
+                            <input type="text" id="vehColor" placeholder="Цвет" style="width:80px;">
                         </div>
                         <input type="text" id="vehOwner" placeholder="Владелец (ник)">
                         <button class="btn btn-primary" onclick="addVehicle()">🚗 Добавить</button>
                     </div>
                     <div class="card">
                         <h3>База ТС</h3>
-                        <div class="search-box" style="position:relative;margin-bottom:8px;">
-                            <span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span>
-                            <input type="text" id="vehSearch" placeholder="Поиск..." oninput="loadVehicles()" style="padding-left:32px;">
-                        </div>
+                        <div style="position:relative;margin-bottom:8px;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span><input type="text" id="vehSearch" placeholder="Поиск..." oninput="loadVehicles()" style="padding-left:32px;"></div>
                         <div id="vehiclesList"></div>
                     </div>
                 </div>
@@ -292,10 +302,7 @@
                 <div class="section" id="articlesSection">
                     <div class="card">
                         <h2>📖 Кодекс</h2>
-                        <div class="search-box" style="position:relative;margin-bottom:8px;">
-                            <span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span>
-                            <input type="text" id="articleSearch" placeholder="Поиск..." oninput="loadArticles()" style="padding-left:32px;">
-                        </div>
+                        <div style="position:relative;margin-bottom:8px;"><span style="position:absolute;left:10px;top:50%;transform:translateY(-70%);color:#555;">🔍</span><input type="text" id="articleSearch" placeholder="Поиск..." oninput="loadArticles()" style="padding-left:32px;"></div>
                         <div id="articlesList"></div>
                     </div>
                 </div>
@@ -307,10 +314,11 @@
                         <div style="display:flex;gap:6px;margin-bottom:8px;">
                             <select id="auditTypeFilter" onchange="loadAudit()" style="flex:1;">
                                 <option value="">Все</option><option value="fine_add">Штрафы</option><option value="wanted_add">Розыски</option>
-                                <option value="warning_add">Предупреждения</option><option value="player_update">Игроки</option>
-                                <option value="vehicle_add">Транспорт</option><option value="clear_data">Очистки</option>
+                                <option value="warning_add">Предупреждения</option><option value="warrant_add">Ордера</option>
+                                <option value="player_update">Игроки</option><option value="vehicle_add">Транспорт</option>
+                                <option value="shift_start">Смены</option><option value="clear_data">Очистки</option>
                             </select>
-                            <input type="number" id="auditLimit" value="50" min="10" max="500" style="width:70px;flex-shrink:0;" onchange="loadAudit()">
+                            <input type="number" id="auditLimit" value="50" min="10" max="500" style="width:70px;" onchange="loadAudit()">
                         </div>
                         <div id="auditList"></div>
                     </div>
@@ -331,6 +339,7 @@
     let currentModerator = null;
     let loginAttempts = 0;
     let loginLocked = false;
+    let currentShift = null;
 
     function updateClock() {
         const el = document.getElementById('liveTime');
@@ -385,23 +394,17 @@
                 document.getElementById('mainApp').style.display = 'flex';
                 document.getElementById('statusBar').innerHTML = '<span class="time" id="liveTime">12:00</span><span>👮 ' + currentModerator.rp_name + ' (' + currentModerator.badge + ')</span>';
                 updateClock();
-
-                // Заполняем бейдж во всех полях
-                if (document.getElementById('fineIssuer')) document.getElementById('fineIssuer').value = currentModerator.badge;
-                if (document.getElementById('wantedIssuer')) document.getElementById('wantedIssuer').value = currentModerator.badge;
-                if (document.getElementById('warnIssuer')) document.getElementById('warnIssuer').value = currentModerator.badge;
-
-                // Главный экран
-                if (document.getElementById('desktopBadge')) document.getElementById('desktopBadge').textContent = currentModerator.badge;
-                if (document.getElementById('desktopRank')) document.getElementById('desktopRank').textContent = currentModerator.rank_name;
-
+                document.getElementById('fineIssuer').value = currentModerator.badge;
+                document.getElementById('wantedIssuer').value = currentModerator.badge;
+                document.getElementById('warnIssuer').value = currentModerator.badge;
+                document.getElementById('warrantIssuer').value = currentModerator.badge;
+                document.getElementById('desktopBadge').textContent = currentModerator.badge;
+                document.getElementById('desktopRank').textContent = currentModerator.rank_name;
                 if (!currentModerator.permissions.can_wanted) {
-                    const tab = document.querySelector('[onclick*="wanted"]');
-                    if (tab) tab.style.display = 'none';
+                    var t = document.querySelector('[onclick*="wanted"]'); if (t) t.style.display = 'none';
                 }
                 if (!currentModerator.permissions.can_audit) {
-                    const tab = document.querySelector('[onclick*="audit"]');
-                    if (tab) tab.style.display = 'none';
+                    var t = document.querySelector('[onclick*="audit"]'); if (t) t.style.display = 'none';
                 }
                 window._canClear = currentModerator.permissions.can_clear;
                 loadAll();
@@ -431,27 +434,35 @@
         if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') login();
     });
 
-    // СКРОЛЛ ТАБОВ
+    // Скролл табов
     var tabsScroll = document.getElementById('tabsScroll');
     var isDown = false, startX, scrollLeftPos;
     tabsScroll.addEventListener('mousedown', function(e) { isDown = true; startX = e.pageX - tabsScroll.offsetLeft; scrollLeftPos = tabsScroll.scrollLeft; });
     tabsScroll.addEventListener('mouseleave', function() { isDown = false; });
     tabsScroll.addEventListener('mouseup', function() { isDown = false; });
-    tabsScroll.addEventListener('mousemove', function(e) {
-        if (!isDown) return;
-        e.preventDefault();
-        var x = e.pageX - tabsScroll.offsetLeft;
-        tabsScroll.scrollLeft = scrollLeftPos - (x - startX);
+    tabsScroll.addEventListener('mousemove', function(e) { if (!isDown) return; e.preventDefault(); tabsScroll.scrollLeft = scrollLeftPos - (e.pageX - tabsScroll.offsetLeft - startX); });
+
+    // Свайпы на контенте
+    var touchStartX = 0;
+    document.getElementById('contentArea').addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
+    document.getElementById('contentArea').addEventListener('touchend', function(e) {
+        var diff = touchStartX - e.changedTouches[0].clientX;
+        if (Math.abs(diff) < 50) return;
+        var tabs = ['desktop','fines','wanted','players','warnings','warrants','vehicles','articles','audit'];
+        var current = '';
+        document.querySelectorAll('.section.active').forEach(function(s) { current = s.id.replace('Section',''); });
+        var idx = tabs.indexOf(current);
+        if (diff > 0 && idx < tabs.length - 1) switchTab(tabs[idx + 1]);
+        if (diff < 0 && idx > 0) switchTab(tabs[idx - 1]);
     });
 
-    // ПЕРЕКЛЮЧЕНИЕ ТАБОВ
     function switchTab(tab) {
         document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
         document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
         var tabs = document.querySelectorAll('.tab');
         for (var i = 0; i < tabs.length; i++) {
             var oc = tabs[i].getAttribute('onclick') || '';
-            if (oc.indexOf("'" + tab + "'") !== -1) { tabs[i].classList.add('active'); break; }
+            if (oc.indexOf("'" + tab + "'") !== -1) { tabs[i].classList.add('active'); tabs[i].scrollIntoView({behavior:'smooth',block:'nearest',inline:'center'}); break; }
         }
         var sec = document.getElementById(tab + 'Section');
         if (sec) sec.classList.add('active');
@@ -459,32 +470,80 @@
         if (tab === 'wanted') loadWanted();
         if (tab === 'players') loadPlayers();
         if (tab === 'warnings') loadWarnings();
+        if (tab === 'warrants') loadWarrants();
         if (tab === 'vehicles') loadVehicles();
         if (tab === 'articles') loadArticles();
         if (tab === 'audit') loadAudit();
-        if (tab === 'desktop') loadDesktopStats();
+        if (tab === 'desktop') { loadDesktopStats(); loadAchievements(); loadLeaderboard(); }
     }
 
-    function loadAll() { loadStats(); loadFines(); loadPlayers(); loadDesktopStats(); loadArticlesIntoSelect(); }
+    function loadAll() { loadStats(); loadFines(); loadPlayers(); loadDesktopStats(); loadAchievements(); loadLeaderboard(); loadArticlesIntoSelect(); }
 
     function loadStats() {
         fetch(API + '/stats').then(r => r.json()).then(function(s) {
-            document.getElementById('statFines') && (document.getElementById('statFines').textContent = s.total_fines);
-            document.getElementById('statWanted') && (document.getElementById('statWanted').textContent = s.total_wanted);
-            document.getElementById('statPlayers') && (document.getElementById('statPlayers').textContent = s.total_players);
-            document.getElementById('statVehicles') && (document.getElementById('statVehicles').textContent = s.total_vehicles || 0);
+            var el = document.getElementById('statusRight');
+            if (el) el.textContent = '📋' + s.total_fines + ' 🚨' + s.total_wanted + ' 👥' + s.total_players;
         }).catch(function(){});
     }
 
     function loadDesktopStats() {
         fetch(API + '/stats').then(r => r.json()).then(function(s) {
-            var html = '<div class="quick-stat"><div class="qs-icon">📋</div><div><div class="qs-value">' + s.total_fines + '</div><div class="qs-label">Активных штрафов</div></div></div>';
+            var html = '<div class="quick-stat"><div class="qs-icon">📋</div><div><div class="qs-value">' + s.total_fines + '</div><div class="qs-label">Штрафов</div></div></div>';
             html += '<div class="quick-stat"><div class="qs-icon">🚨</div><div><div class="qs-value">' + s.total_wanted + '</div><div class="qs-label">В розыске</div></div></div>';
             html += '<div class="quick-stat"><div class="qs-icon">👥</div><div><div class="qs-value">' + s.total_players + '</div><div class="qs-label">В базе</div></div></div>';
-            html += '<div class="quick-stat"><div class="qs-icon">🚗</div><div><div class="qs-value">' + (s.total_vehicles || 0) + '</div><div class="qs-label">Автомобилей</div></div></div>';
-            var el = document.getElementById('desktopStats');
-            if (el) el.innerHTML = html;
+            html += '<div class="quick-stat"><div class="qs-icon">📜</div><div><div class="qs-value">' + (s.total_warrants || 0) + '</div><div class="qs-label">Ордеров</div></div></div>';
+            html += '<div class="quick-stat"><div class="qs-icon">🟢</div><div><div class="qs-value">' + (s.officers_on_duty || 0) + '</div><div class="qs-label">На смене</div></div></div>';
+            document.getElementById('desktopStats').innerHTML = html;
         }).catch(function(){});
+    }
+
+    function loadAchievements() {
+        if (!currentModerator) return;
+        fetch(API + '/achievements/' + encodeURIComponent(currentModerator.badge)).then(r => r.json()).then(function(data) {
+            if (data.achievements && data.achievements.length) {
+                document.getElementById('achievementsCard').style.display = 'block';
+                document.getElementById('achievementsList').innerHTML = data.achievements.map(function(a) {
+                    return '<span class="achieve-badge">' + a + '</span>';
+                }).join('');
+            }
+        }).catch(function(){});
+    }
+
+    function loadLeaderboard() {
+        fetch(API + '/leaderboard').then(r => r.json()).then(function(board) {
+            var html = '';
+            board.forEach(function(o, i) {
+                html += '<div class="quick-stat"><div class="qs-icon">' + ['🥇','🥈','🥉','4️⃣','5️⃣'][i] + '</div><div><strong>' + o.badge + '</strong><div class="qs-label">Штрафов: ' + o.fines + ' | Розысков: ' + o.wanted + ' | Очисток: ' + o.clears + '</div></div></div>';
+            });
+            document.getElementById('leaderboardList').innerHTML = html || '<p style="color:#888;">Пока нет данных</p>';
+        }).catch(function(){});
+    }
+
+    function toggleShift() {
+        if (currentShift) {
+            fetch(API + '/shifts/' + currentShift.id + '/end', {method:'POST'}).then(r => r.json()).then(function() {
+                currentShift = null;
+                document.getElementById('shiftBadge').textContent = '⚫ Не на смене';
+                document.getElementById('shiftBadge').className = 'shift-badge off';
+                document.getElementById('shiftBtn').textContent = '🟢 Начать смену';
+                document.getElementById('shiftBtn').className = 'btn btn-success btn-sm';
+                toast('Смена завершена', 'success');
+                loadDesktopStats();
+            });
+        } else {
+            fetch(API + '/shifts/start', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({officer: currentModerator.badge})})
+            .then(r => r.json()).then(function(res) {
+                if (res.success) {
+                    currentShift = res.shift;
+                    document.getElementById('shiftBadge').textContent = '🟢 На смене';
+                    document.getElementById('shiftBadge').className = 'shift-badge on';
+                    document.getElementById('shiftBtn').textContent = '🔴 Завершить смену';
+                    document.getElementById('shiftBtn').className = 'btn btn-danger btn-sm';
+                    toast('Смена начата!', 'success');
+                    loadDesktopStats();
+                }
+            });
+        }
     }
 
     function getIssuer() { return currentModerator ? currentModerator.badge : 'LSPD#0000'; }
@@ -499,22 +558,22 @@
             body:JSON.stringify({nickname:n, reason:r, article:document.getElementById('fineArticle').value, time:document.getElementById('fineTime').value.trim()||undefined, issued_by:getIssuer()})
         })
         .then(r => r.json()).then(res => {
-            if (res.success) { toast('✅ Штраф #' + res.fine.id + ' выписан', 'success'); document.getElementById('fineNickname').value = ''; document.getElementById('fineReason').value = ''; loadFines(); loadStats(); loadDesktopStats(); }
+            if (res.success) { toast('✅ Штраф #' + res.fine.id, 'success'); document.getElementById('fineNickname').value = ''; document.getElementById('fineReason').value = ''; loadFines(); loadStats(); }
             else { toast(res.error, 'error'); }
-        }).catch(function(){ toast('Ошибка соединения', 'error'); });
+        }).catch(function(){ toast('Ошибка', 'error'); });
     }
     function deleteFine(id) {
-        if (!confirm('Снять штраф?')) return;
+        if (!confirm('Снять?')) return;
         fetch(API + '/fines/' + id, {method:'DELETE'}).then(r => r.json()).then(res => {
-            if (res.success) { toast('🗑️ Снят', 'success'); loadFines(); loadStats(); loadDesktopStats(); }
+            if (res.success) { toast('🗑️ Снят', 'success'); loadFines(); loadStats(); }
         });
     }
     function loadFines() {
         fetch(API + '/fines').then(r => r.json()).then(function(fines) {
             var list = document.getElementById('finesList');
-            if (!fines.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет штрафов</p>'; return; }
+            if (!fines.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
             list.innerHTML = fines.reverse().map(function(f) {
-                return '<div class="list-item"><div class="info"><strong>#' + f.id + ' 👤 ' + f.nickname + '</strong><small>📋 ' + f.reason + ' | 🕐 ' + f.time + '</small></div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteFine(' + f.id + ')">🗑️</button></div></div>';
+                return '<div class="list-item"><div class="info"><strong>#' + f.id + ' 👤 ' + f.nickname + '</strong><small>' + f.reason + ' | ' + f.time + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteFine(' + f.id + ')">🗑️</button></div>';
             }).join('');
         });
     }
@@ -529,22 +588,21 @@
             body:JSON.stringify({nickname:n, reason:r, stars:parseInt(document.getElementById('wantedStars').value)||1, issued_by:getIssuer()})
         })
         .then(r => r.json()).then(res => {
-            if (res.success) { toast('🚨 Розыск #' + res.wanted.id + ' объявлен', 'success'); document.getElementById('wantedNickname').value = ''; document.getElementById('wantedReason').value = ''; loadWanted(); loadStats(); loadDesktopStats(); }
-            else { toast(res.error, 'error'); }
-        }).catch(function(){ toast('Ошибка соединения', 'error'); });
+            if (res.success) { toast('🚨 Розыск #' + res.wanted.id, 'success'); document.getElementById('wantedNickname').value = ''; document.getElementById('wantedReason').value = ''; loadWanted(); loadStats(); }
+        }).catch(function(){ toast('Ошибка', 'error'); });
     }
     function deleteWanted(id) {
-        if (!confirm('Снять розыск?')) return;
+        if (!confirm('Снять?')) return;
         fetch(API + '/wanted/' + id, {method:'DELETE'}).then(r => r.json()).then(res => {
-            if (res.success) { toast('🔓 Снят', 'success'); loadWanted(); loadStats(); loadDesktopStats(); }
+            if (res.success) { toast('🔓 Снят', 'success'); loadWanted(); loadStats(); }
         });
     }
     function loadWanted() {
         fetch(API + '/wanted').then(r => r.json()).then(function(wanted) {
             var list = document.getElementById('wantedList');
-            if (!wanted.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Розыск пуст</p>'; return; }
+            if (!wanted.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
             list.innerHTML = wanted.reverse().map(function(w) {
-                return '<div class="list-item' + (w.stars>=4?' danger':'') + '"><div class="info"><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>📋 ' + w.reason + '</small><span class="stars">' + '⭐'.repeat(w.stars) + '☆'.repeat(5-w.stars) + '</span></div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWanted(' + w.id + ')">🔓</button></div></div>';
+                return '<div class="list-item' + (w.stars>=4?' danger':'') + '"><div class="info"><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>' + w.reason + '</small><span class="stars">' + '⭐'.repeat(w.stars) + '☆'.repeat(5-w.stars) + '</span></div><button class="btn btn-danger btn-sm" onclick="deleteWanted(' + w.id + ')">🔓</button></div>';
             }).join('');
         });
     }
@@ -559,14 +617,13 @@
             body:JSON.stringify({nickname:n, reason:r, type:document.getElementById('warnType').value, issued_by:getIssuer()})
         })
         .then(r => r.json()).then(res => {
-            if (res.success) { toast(res.auto_wanted ? '⚠️ + авто-розыск!' : '⚠️ Вынесено', res.auto_wanted?'warn':'success'); document.getElementById('warnNickname').value = ''; document.getElementById('warnReason').value = ''; loadWarnings(); loadStats(); loadDesktopStats(); if(res.auto_wanted){loadWanted();} }
-            else { toast(res.error, 'error'); }
-        }).catch(function(){ toast('Ошибка соединения', 'error'); });
+            if (res.success) { toast(res.auto_wanted ? '⚠️ + авто-розыск!' : '⚠️ Вынесено', res.auto_wanted?'warn':'success'); document.getElementById('warnNickname').value = ''; document.getElementById('warnReason').value = ''; loadWarnings(); loadStats(); if(res.auto_wanted)loadWanted(); }
+        }).catch(function(){ toast('Ошибка', 'error'); });
     }
     function deleteWarning(id) {
         if (!confirm('Удалить?')) return;
         fetch(API + '/warnings/' + id, {method:'DELETE'}).then(r => r.json()).then(res => {
-            if (res.success) { toast('🗑️ Удалено', 'success'); loadWarnings(); loadStats(); loadDesktopStats(); }
+            if (res.success) { toast('🗑️ Удалено', 'success'); loadWarnings(); loadStats(); }
         });
     }
     function loadWarnings() {
@@ -574,7 +631,36 @@
             var list = document.getElementById('warningsList');
             if (!warnings.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
             list.innerHTML = warnings.reverse().map(function(w) {
-                return '<div class="list-item"><div class="info"><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>' + (w.type==='written'?'📝':'🗣') + ' ' + w.reason + '</small></div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteWarning(' + w.id + ')">🗑️</button></div></div>';
+                return '<div class="list-item"><div class="info"><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>' + (w.type==='written'?'📝':'🗣') + ' ' + w.reason + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteWarning(' + w.id + ')">🗑️</button></div>';
+            }).join('');
+        });
+    }
+
+    // WARRANTS
+    function addWarrant() {
+        var n = document.getElementById('warrantNickname').value.trim();
+        var r = document.getElementById('warrantReason').value.trim();
+        if (!n || !r) { toast('Заполните ник и причину', 'error'); return; }
+        fetch(API + '/warrants', {
+            method:'POST', headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({nickname:n, reason:r, type:document.getElementById('warrantType').value, issued_by:getIssuer()})
+        })
+        .then(r => r.json()).then(res => {
+            if (res.success) { toast('📜 Ордер #' + res.warrant.id, 'success'); document.getElementById('warrantNickname').value = ''; document.getElementById('warrantReason').value = ''; loadWarrants(); }
+        }).catch(function(){ toast('Ошибка', 'error'); });
+    }
+    function revokeWarrant(id) {
+        if (!confirm('Отозвать?')) return;
+        fetch(API + '/warrants/' + id, {method:'DELETE'}).then(r => r.json()).then(res => {
+            if (res.success) { toast('📜 Отозван', 'success'); loadWarrants(); }
+        });
+    }
+    function loadWarrants() {
+        fetch(API + '/warrants').then(r => r.json()).then(function(warrants) {
+            var list = document.getElementById('warrantsList');
+            if (!warrants.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Нет активных ордеров</p>'; return; }
+            list.innerHTML = warrants.map(function(w) {
+                return '<div class="list-item"><div class="info"><strong>#' + w.id + ' 📜 ' + (w.type==='arrest'?'🔒 Арест':'🔍 Обыск') + ' — ' + w.nickname + '</strong><small>' + w.reason + ' | Истекает: ' + new Date(w.expires).toLocaleString('ru-RU') + '</small></div><button class="btn btn-danger btn-sm" onclick="revokeWarrant(' + w.id + ')">Отозвать</button></div>';
             }).join('');
         });
     }
@@ -588,14 +674,13 @@
             body:JSON.stringify({plate:plate, model:document.getElementById('vehModel').value.trim(), color:document.getElementById('vehColor').value.trim(), owner_nickname:document.getElementById('vehOwner').value.trim()})
         })
         .then(r => r.json()).then(res => {
-            if (res.success) { toast('🚗 Добавлено', 'success'); document.getElementById('vehPlate').value=''; document.getElementById('vehModel').value=''; document.getElementById('vehColor').value=''; document.getElementById('vehOwner').value=''; loadVehicles(); loadStats(); loadDesktopStats(); }
-            else { toast(res.error, 'error'); }
-        }).catch(function(){ toast('Ошибка соединения', 'error'); });
+            if (res.success) { toast('🚗 Добавлено', 'success'); document.getElementById('vehPlate').value=''; document.getElementById('vehModel').value=''; document.getElementById('vehColor').value=''; document.getElementById('vehOwner').value=''; loadVehicles(); loadStats(); }
+        }).catch(function(){ toast('Ошибка', 'error'); });
     }
     function deleteVehicle(plate) {
         if (!confirm('Удалить?')) return;
         fetch(API + '/vehicles/' + encodeURIComponent(plate), {method:'DELETE'}).then(r => r.json()).then(res => {
-            if (res.success) { toast('🗑️ Удалено', 'success'); loadVehicles(); loadStats(); loadDesktopStats(); }
+            if (res.success) { toast('🗑️ Удалено', 'success'); loadVehicles(); loadStats(); }
         });
     }
     function loadVehicles() {
@@ -603,18 +688,19 @@
             var list = document.getElementById('vehiclesList');
             if (!vehicles.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
             list.innerHTML = vehicles.map(function(v) {
-                return '<div class="list-item"><div class="info"><strong>🚗 ' + v.plate + '</strong><small>' + (v.model||'—') + ' | ' + (v.color||'—') + ' | 👤 ' + (v.owner_nickname||'—') + '</small></div><div class="actions"><button class="btn btn-danger btn-sm" onclick="deleteVehicle(\'' + v.plate + '\')">🗑️</button></div></div>';
+                return '<div class="list-item"><div class="info"><strong>🚗 ' + v.plate + '</strong><small>' + (v.model||'—') + ' | ' + (v.color||'—') + ' | 👤 ' + (v.owner_nickname||'—') + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteVehicle(\'' + v.plate + '\')">🗑️</button></div>';
             }).join('');
         });
     }
 
     // PLAYERS
     function loadPlayers() {
-        fetch(API + '/players').then(r => r.json()).then(function(players) {
+        var search = document.getElementById('playerSearch')?.value || '';
+        fetch(API + '/players?search=' + encodeURIComponent(search)).then(r => r.json()).then(function(players) {
             var list = document.getElementById('playersList');
             if (!players.length) { list.innerHTML = '<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
             list.innerHTML = players.map(function(p) {
-                return '<div class="player-card" onclick="openPlayerProfile(\'' + p.nickname + '\')"><img class="avatar" src="' + (p.photo_url||'') + '" onerror="this.style.display=\'none\'"><div class="info"><div class="nickname">👤 ' + p.nickname + '</div><div class="rp-info">' + (p.rp_name?'🎭 '+p.rp_name:'Без RP-имени') + ' ' + (p.rp_age?'| 🎂 '+p.rp_age:'') + '</div></div></div>';
+                return '<div class="player-card" onclick="openPlayerProfile(\'' + p.nickname + '\')"><img class="avatar" src="' + (p.photo_url||'') + '" onerror="this.style.display=\'none\'"><div class="info"><div class="nickname">👤 ' + p.nickname + '</div><div class="rp-info">' + (p.rp_name?'🎭 '+p.rp_name:'—') + ' | ' + (p.player_rank||'гражданский') + '</div></div></div>';
             }).join('');
         });
     }
@@ -622,19 +708,37 @@
         fetch(API + '/players/' + encodeURIComponent(nickname)).then(r => r.json()).then(function(data) {
             if (!data||!data.player) { toast('Не найден', 'error'); return; }
             var p = data.player;
-            document.getElementById('playerModalContent').innerHTML = '<button class="close-btn" onclick="closeModal()" style="float:right;background:none;border:none;color:var(--text);font-size:20px;cursor:pointer;">✕</button><div style="text-align:center;"><img class="modal-avatar" src="' + (p.photo_url||'') + '" onerror="this.style.display=\'none\'" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);margin-bottom:8px;"></div><h2>👤 ' + p.nickname + '</h2><div style="display:flex;gap:6px;"><input type="text" id="editRpName" value="' + (p.rp_name||'') + '" placeholder="RP-имя"><input type="text" id="editRpAge" value="' + (p.rp_age||'') + '" placeholder="RP-возраст"></div><input type="text" id="editNotes" value="' + (p.notes||'') + '" placeholder="Заметки"><button class="btn btn-primary" onclick="savePlayer(\'' + p.nickname + '\')">💾 Сохранить</button>' + (window._canClear ? '<button class="btn btn-danger" onclick="clearPlayerData(\'' + p.nickname + '\')">🧹 Очистить</button>' : '') + '<h3>📋 Штрафы (' + (data.fines||[]).length + ')</h3>' + ((data.fines||[]).map(function(f){ return '<div class="list-item"><div class="info"><strong>#' + f.id + '</strong> ' + f.reason + ' <small>' + f.time + '</small></div></div>'; }).join('')||'<p style="color:#888">Нет</p>') + '<h3>🚨 Розыск (' + (data.wanted||[]).length + ')</h3>' + ((data.wanted||[]).map(function(w){ return '<div class="list-item danger"><div class="info"><strong>#' + w.id + '</strong> ' + w.reason + ' <span class="stars">' + '⭐'.repeat(w.stars) + '</span></div></div>'; }).join('')||'<p style="color:#888">Нет</p>') + '<h3>⚠️ Предупреждения (' + (data.warnings||[]).length + ')</h3>' + ((data.warnings||[]).map(function(w){ return '<div class="list-item"><div class="info"><strong>#' + w.id + '</strong> ' + (w.type==='written'?'📝':'🗣') + ' ' + w.reason + '</div></div>'; }).join('')||'<p style="color:#888">Нет</p>') + '<h3>🚗 ТС (' + (data.vehicles||[]).length + ')</h3>' + ((data.vehicles||[]).map(function(v){ return '<div class="list-item"><div class="info"><strong>' + v.plate + '</strong> ' + (v.model||'') + ' ' + (v.color||'') + '</div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            var html = '<button class="close-btn" onclick="closeModal()" style="float:right;background:none;border:none;color:var(--text);font-size:20px;">✕</button>';
+            html += '<div style="text-align:center;"><img class="modal-avatar" src="' + (p.photo_url||'') + '" onerror="this.style.display=\'none\'" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid var(--accent);margin-bottom:8px;"></div>';
+            html += '<h2>👤 ' + p.nickname + ' <span style="font-size:12px;color:var(--text-secondary);">(' + (p.player_rank||'гражданский') + ')</span></h2>';
+            html += '<div style="display:flex;gap:6px;"><input type="text" id="editRpName" value="' + (p.rp_name||'') + '" placeholder="RP-имя"><input type="text" id="editRpAge" value="' + (p.rp_age||'') + '" placeholder="Возраст"></div>';
+            html += '<input type="text" id="editNotes" value="' + (p.notes||'') + '" placeholder="Заметки">';
+            html += '<select id="editPlayerRank" style="margin-bottom:6px;"><option value="гражданский"' + (p.player_rank==='гражданский'?' selected':'') + '>Гражданский</option><option value="адвокат"' + (p.player_rank==='адвокат'?' selected':'') + '>Адвокат</option><option value="прокурор"' + (p.player_rank==='прокурор'?' selected':'') + '>Прокурор</option><option value="судья"' + (p.player_rank==='судья'?' selected':'') + '>Судья</option></select>';
+            html += '<button class="btn btn-primary" onclick="savePlayer(\'' + p.nickname + '\')">💾 Сохранить</button>';
+            if (window._canClear) html += '<button class="btn btn-danger" onclick="clearPlayerData(\'' + p.nickname + '\')">🧹 Очистить</button>';
+            html += '<h3>📋 Штрафы (' + (data.fines||[]).length + ')</h3>' + ((data.fines||[]).map(function(f){ return '<div class="list-item"><div class="info"><strong>#' + f.id + '</strong> ' + f.reason + ' <small>' + f.time + '</small></div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            html += '<h3>🚨 Розыск (' + (data.wanted||[]).length + ')</h3>' + ((data.wanted||[]).map(function(w){ return '<div class="list-item danger"><div class="info"><strong>#' + w.id + '</strong> ' + w.reason + ' <span class="stars">' + '⭐'.repeat(w.stars) + '</span></div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            html += '<h3>⚠️ Предупреждения (' + (data.warnings||[]).length + ')</h3>' + ((data.warnings||[]).map(function(w){ return '<div class="list-item"><div class="info"><strong>#' + w.id + '</strong> ' + w.reason + '</div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            html += '<h3>📜 Ордера (' + (data.warrants||[]).length + ')</h3>' + ((data.warrants||[]).map(function(w){ return '<div class="list-item"><div class="info"><strong>#' + w.id + '</strong> ' + (w.type==='arrest'?'🔒 Арест':'🔍 Обыск') + ' — ' + w.reason + '</div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            html += '<h3>🚗 ТС (' + (data.vehicles||[]).length + ')</h3>' + ((data.vehicles||[]).map(function(v){ return '<div class="list-item"><div class="info"><strong>' + v.plate + '</strong> ' + (v.model||'') + ' ' + (v.color||'') + '</div></div>'; }).join('')||'<p style="color:#888">Нет</p>');
+            document.getElementById('playerModalContent').innerHTML = html;
             document.getElementById('playerModal').style.display = 'flex';
         });
     }
     function savePlayer(nickname) {
-        var data = {rp_name: document.getElementById('editRpName').value.trim(), rp_age: document.getElementById('editRpAge').value.trim(), notes: document.getElementById('editNotes')?.value.trim()||''};
+        var data = {
+            rp_name: document.getElementById('editRpName').value.trim(),
+            rp_age: document.getElementById('editRpAge').value.trim(),
+            notes: document.getElementById('editNotes')?.value.trim()||'',
+            player_rank: document.getElementById('editPlayerRank')?.value||'гражданский'
+        };
         fetch(API + '/players/' + encodeURIComponent(nickname), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)})
-        .then(r => r.json()).then(function(res) { if(res.success){ toast('💾 Сохранено','success'); closeModal(); loadPlayers(); loadStats(); } });
+        .then(r => r.json()).then(function(res) { if(res.success){ toast('💾 Сохранено','success'); closeModal(); loadPlayers(); } });
     }
     function clearPlayerData(nickname) {
         if(!confirm('Точно очистить ВСЕ данные ' + nickname + '?')) return;
         fetch(API + '/players/' + encodeURIComponent(nickname) + '/clear', {method:'POST'}).then(r => r.json()).then(function(res) {
-            if(res.success){ toast('🧹 Очищено!', 'success'); closeModal(); loadPlayers(); loadStats(); loadDesktopStats(); }
+            if(res.success){ toast('🧹 Очищено!', 'success'); closeModal(); loadPlayers(); loadStats(); }
         });
     }
     function closeModal() { document.getElementById('playerModal').style.display = 'none'; }
@@ -655,7 +759,7 @@
     function loadArticles() {
         fetch(API + '/articles').then(r => r.json()).then(function(articles) {
             document.getElementById('articlesList').innerHTML = articles.map(function(a) {
-                return '<div class="list-item"><div class="info"><strong><span class="article-tag" style="display:inline-block;background:rgba(68,138,255,0.15);color:var(--info);padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-right:4px;">' + a.id + '</span> ' + a.title + '</strong><small>💰 $' + a.fine + '</small></div><button class="btn btn-info btn-sm" onclick="document.getElementById(\'fineArticle\').value=\'' + a.id + '\';onArticleSelect();switchTab(\'fines\')">Выписать</button></div>';
+                return '<div class="list-item"><div class="info"><strong><span style="display:inline-block;background:rgba(68,138,255,0.15);color:var(--info);padding:2px 8px;border-radius:10px;font-size:10px;margin-right:4px;">' + a.id + '</span> ' + a.title + '</strong><small>💰 $' + a.fine + '</small></div><button class="btn btn-info btn-sm" onclick="document.getElementById(\'fineArticle\').value=\'' + a.id + '\';onArticleSelect();switchTab(\'fines\')">Выписать</button></div>';
             }).join('');
         });
     }
@@ -667,10 +771,10 @@
         fetch(API + '/audit?limit=' + limit + '&type=' + type).then(r => r.json()).then(function(logs) {
             var list = document.getElementById('auditList');
             if(!logs.length){ list.innerHTML='<p style="color:#888;text-align:center;padding:16px;">Пусто</p>'; return; }
-            var icons = {fine_add:'📋',fine_remove:'🗑️',wanted_add:'🚨',wanted_remove:'🔓',warning_add:'⚠️',warning_remove:'🗑️',player_update:'👤',vehicle_add:'🚗',vehicle_remove:'🗑️',clear_data:'🧹',auto_wanted:'🤖'};
+            var icons = {fine_add:'📋',fine_remove:'🗑️',wanted_add:'🚨',wanted_remove:'🔓',warning_add:'⚠️',warning_remove:'🗑️',warrant_add:'📜',warrant_revoke:'📜',player_update:'👤',vehicle_add:'🚗',vehicle_remove:'🗑️',clear_data:'🧹',auto_wanted:'🤖',shift_start:'🟢',shift_end:'🔴'};
             list.innerHTML = logs.map(function(l) {
                 var dt = new Date(l.timestamp);
-                return '<div class="list-item"><div class="info"><strong>' + (icons[l.action_type]||'📝') + ' #' + l.id + '</strong><small>' + l.description + '</small><div class="meta" style="font-size:9px;color:var(--text-secondary);">👮 ' + l.moderator + ' | 🕐 ' + dt.toLocaleString('ru-RU') + '</div></div></div>';
+                return '<div class="list-item"><div class="info"><strong>' + (icons[l.action_type]||'📝') + ' #' + l.id + '</strong><small>' + l.description + '</small><div style="font-size:9px;color:var(--text-secondary);">👮 ' + l.moderator + ' | ' + dt.toLocaleString('ru-RU') + '</div></div></div>';
             }).join('');
         });
     }
