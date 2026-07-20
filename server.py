@@ -12,11 +12,6 @@ CORS(app)
 DB_FILE = 'database.json'
 CONFIG_FILE = 'config.json'
 
-# ============================================================
-# ⭐ ТОКЕН ВАШЕГО БОТА (экономического) ⭐
-# ============================================================
-BOT_TOKEN = "MTUyODcyNzg5MTg0NjYzMTQ4Ng.GWurRL.kWSJ2NsEHLcQF64fQHNKJ-dBb3w2r0x0MP-kp4"
-
 # Загрузка конфига
 try:
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -27,8 +22,7 @@ except:
         "fine_webhook_url": "", 
         "wanted_webhook_url": "", 
         "log_webhook_url": "", 
-        "panic_webhook_url": "",
-        "bot_channel_id": "1528738908655976599"  # Канал для команд бота
+        "panic_webhook_url": ""
     }
 
 # Права ролей
@@ -108,43 +102,6 @@ def add_audit(action_type, description, moderator="Неизвестно"):
     if len(db['audit_log']) > 500: 
         db['audit_log'] = db['audit_log'][-500:]
     save_db()
-
-# ============================================================
-# ⭐ ФУНКЦИЯ ОТПРАВКИ КОМАНДЫ БОТУ ⭐
-# ============================================================
-
-def send_bot_command(command):
-    """
-    Отправляет команду боту через Discord API в канал 1528738908655976599
-    """
-    channel_id = config.get('bot_channel_id', '1528738908655976599')
-    
-    url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
-    headers = {
-        "Authorization": f"Bot {BOT_TOKEN}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "content": command
-    }
-    
-    try:
-        response = requests.post(url, headers=headers, json=data, timeout=10)
-        if response.status_code == 200 or response.status_code == 201:
-            print(f"✅ Команда отправлена боту: {command}")
-            return True, None
-        else:
-            error_msg = f"Ошибка {response.status_code}: {response.text}"
-            print(f"❌ {error_msg}")
-            return False, error_msg
-    except Exception as e:
-        error_msg = str(e)
-        print(f"❌ Ошибка отправки команды: {error_msg}")
-        return False, error_msg
-
-# ============================================================
-# ВЕБХУКИ ДЛЯ ЛОГОВ И УВЕДОМЛЕНИЙ
-# ============================================================
 
 def send_webhook(webhook_url, embed):
     if not webhook_url: 
@@ -352,7 +309,7 @@ def clear_player_data(nickname):
     return jsonify({"success": True, "fines_removed": len(pf), "wanted_removed": len(pw)})
 
 # ============================================================
-# ⭐ ШТРАФЫ (ГЛАВНАЯ ФУНКЦИЯ) ⭐
+# ШТРАФЫ
 # ============================================================
 
 @app.route('/api/fines', methods=['GET'])
@@ -388,7 +345,6 @@ def add_fine():
     
     issued_by = data.get('issued_by', 'CCPD#0000')
     
-    # === ОТПРАВКА ШТРАФА В ОСНОВНОЙ КАНАЛ (через вебхук) ===
     embed = {
         "title": f"📋 Штраф #{fid}", 
         "color": 9807270, 
@@ -403,7 +359,6 @@ def add_fine():
     }
     msg_id = send_webhook(config.get('fine_webhook_url',''), embed)
     
-    # Сохраняем штраф
     fine = {
         "id": fid, 
         "nickname": nickname, 
@@ -421,25 +376,7 @@ def add_fine():
     update_officer_achievements(issued_by)
     save_db()
     
-    # ============================================================
-    # ⭐ ОТПРАВКА КОМАНДЫ БОТУ (РОБЛОКС НИК → ПОИСК В КАНАЛЕ) ⭐
-    # ============================================================
-    command = f"/remove {nickname} {fine_amount} Штраф #{fid}: {reason}"
-    success, error = send_bot_command(command)
-    
-    if success:
-        send_webhook_message(config.get('log_webhook_url',''), 
-            f"🤖 Команда боту отправлена: `{command}`")
-    else:
-        send_webhook_message(config.get('log_webhook_url',''), 
-            f"❌ Ошибка отправки команды боту: {error}\nКоманда: `{command}`")
-    
-    return jsonify({
-        "success": True, 
-        "fine": db['fines'][-1],
-        "bot_command_sent": success,
-        "bot_command": command
-    })
+    return jsonify({"success": True, "fine": db['fines'][-1]})
 
 @app.route('/api/fines/<int:fid>', methods=['DELETE'])
 def delete_fine(fid):
@@ -821,30 +758,6 @@ def get_audit():
 @app.route('/api/articles', methods=['GET'])
 def get_articles():
     return jsonify(db['articles'])
-
-# ============================================================
-# ⭐ РУЧНАЯ ОТПРАВКА КОМАНДЫ БОТУ ⭐
-# ============================================================
-
-@app.route('/api/bot/command', methods=['POST'])
-def send_bot_command_api():
-    """
-    Ручная отправка команды боту
-    POST /api/bot/command
-    {"command": "/remove JohnDoe 500 Штраф"}
-    """
-    data = request.json
-    command = data.get('command', '')
-    
-    if not command:
-        return jsonify({"success": False, "error": "Команда не указана"}), 400
-    
-    success, error = send_bot_command(command)
-    
-    if success:
-        return jsonify({"success": True, "message": f"Команда отправлена: {command}"})
-    else:
-        return jsonify({"success": False, "error": f"Не удалось отправить команду: {error}"}), 500
 
 # ============================================================
 # АНАЛИТИКА
