@@ -546,21 +546,29 @@
     });
 
     function switchTab(tab) {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        const tabBtn = document.querySelector(`[data-tab="${tab}"]`);
-        if (tabBtn) tabBtn.classList.add('active');
-        const section = document.getElementById(tab + 'Section');
-        if (section) section.classList.add('active');
-        if (tab === 'fines') loadFines();
-        if (tab === 'wanted') loadWanted();
-        if (tab === 'players') loadPlayers();
-        if (tab === 'warnings') loadWarnings();
-        if (tab === 'vehicles') loadVehicles();
-        if (tab === 'articles') loadArticles();
-        if (tab === 'audit') loadAudit();
-        if (tab === 'desktop') loadHighAlerts();
-    }
+    // Убираем active со всех табов
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    // Убираем active со всех секций
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    
+    // Активируем нужный таб
+    const tabBtn = document.querySelector(`[data-tab="${tab}"]`);
+    if (tabBtn) tabBtn.classList.add('active');
+    
+    // Активируем нужную секцию
+    const section = document.getElementById(tab + 'Section');
+    if (section) section.classList.add('active');
+    
+    // Загружаем данные для раздела
+    if (tab === 'fines') loadFines();
+    if (tab === 'wanted') loadWanted();
+    if (tab === 'players') loadPlayers();
+    if (tab === 'warnings') loadWarnings();
+    if (tab === 'vehicles') loadVehicles();
+    if (tab === 'articles') loadArticles();
+    if (tab === 'audit') loadAudit();
+    if (tab === 'desktop') loadHighAlerts();
+}
 
     function loadAll() { loadStats(); loadFines(); loadPlayers(); loadHighAlerts(); loadArticlesIntoSelect(); }
 
