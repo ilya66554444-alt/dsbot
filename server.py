@@ -12,6 +12,11 @@ CORS(app)
 DB_FILE = 'database.json'
 CONFIG_FILE = 'config.json'
 
+# ============================================================
+# ⭐ ТОКЕН ВАШЕГО БОТА (экономического) ⭐
+# ============================================================
+BOT_TOKEN = "MTUyODcyNzg5MTg0NjYzMTQ4Ng.GWurRL.kWSJ2NsEHLcQF64fQHNKJ-dBb3w2r0x0MP-kp4"
+
 # Загрузка конфига
 try:
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
@@ -23,15 +28,15 @@ except:
         "wanted_webhook_url": "", 
         "log_webhook_url": "", 
         "panic_webhook_url": "",
-        "currency_webhook_url": ""
+        "bot_channel_id": "1528738908655976599"  # Канал для команд бота
     }
 
 # Права ролей
 ROLES = {
-    "кадет": {"name": "Кадет", "can_fine": True, "can_warn": True, "can_wanted": False, "can_clear": False, "can_audit": False, "can_currency": False},
-    "офицер": {"name": "Офицер", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": False, "can_audit": False, "can_currency": True},
-    "сержант": {"name": "Сержант", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": True, "can_audit": True, "can_currency": True},
-    "лейтенант": {"name": "Лейтенант", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": True, "can_audit": True, "can_currency": True}
+    "кадет": {"name": "Кадет", "can_fine": True, "can_warn": True, "can_wanted": False, "can_clear": False, "can_audit": False},
+    "офицер": {"name": "Офицер", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": False, "can_audit": False},
+    "сержант": {"name": "Сержант", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": True, "can_audit": True},
+    "лейтенант": {"name": "Лейтенант", "can_fine": True, "can_warn": True, "can_wanted": True, "can_clear": True, "can_audit": True}
 }
 
 # Загрузка БД
@@ -57,8 +62,6 @@ default_db = {
     "officer_achievements": [], 
     "panic_log": [], 
     "detentions": [],
-    "currency": {},  # Новая секция для валюты
-    "currency_log": [],  # Лог транзакций
     "articles": [
         {"id": "12.1", "title": "Проезд на красный свет", "fine": 500},
         {"id": "12.2", "title": "Превышение скорости", "fine": 300},
@@ -76,8 +79,7 @@ default_db = {
     "audit_counter": 0,
     "warrant_counter": 0, 
     "shift_counter": 0, 
-    "panic_counter": 0,
-    "currency_counter": 0
+    "panic_counter": 0
 }
 for key, value in default_db.items():
     if key not in db:
@@ -106,6 +108,43 @@ def add_audit(action_type, description, moderator="Неизвестно"):
     if len(db['audit_log']) > 500: 
         db['audit_log'] = db['audit_log'][-500:]
     save_db()
+
+# ============================================================
+# ⭐ ФУНКЦИЯ ОТПРАВКИ КОМАНДЫ БОТУ ⭐
+# ============================================================
+
+def send_bot_command(command):
+    """
+    Отправляет команду боту через Discord API в канал 1528738908655976599
+    """
+    channel_id = config.get('bot_channel_id', '1528738908655976599')
+    
+    url = f"https://discord.com/api/v10/channels/{channel_id}/messages"
+    headers = {
+        "Authorization": f"Bot {BOT_TOKEN}",
+        "Content-Type": "application/json"
+    }
+    data = {
+        "content": command
+    }
+    
+    try:
+        response = requests.post(url, headers=headers, json=data, timeout=10)
+        if response.status_code == 200 or response.status_code == 201:
+            print(f"✅ Команда отправлена боту: {command}")
+            return True, None
+        else:
+            error_msg = f"Ошибка {response.status_code}: {response.text}"
+            print(f"❌ {error_msg}")
+            return False, error_msg
+    except Exception as e:
+        error_msg = str(e)
+        print(f"❌ Ошибка отправки команды: {error_msg}")
+        return False, error_msg
+
+# ============================================================
+# ВЕБХУКИ ДЛЯ ЛОГОВ И УВЕДОМЛЕНИЙ
+# ============================================================
 
 def send_webhook(webhook_url, embed):
     if not webhook_url: 
@@ -172,7 +211,7 @@ def update_officer_achievements(badge):
         return
     officer = next((o for o in db['officer_achievements'] if o['badge'] == badge), None)
     if not officer:
-        officer = {"badge": badge, "fines": 0, "wanted": 0, "clears": 0, "currency_actions": 0, "achievements": []}
+        officer = {"badge": badge, "fines": 0, "wanted": 0, "clears": 0, "achievements": []}
         db['officer_achievements'].append(officer)
     officer['fines'] = len([f for f in db['fines'] if f.get('issued_by') == badge])
     officer['wanted'] = len([w for w in db['wanted'] if w.get('issued_by') == badge])
@@ -217,7 +256,7 @@ def auth():
                 "rp_name": moder.get('rp_name', ''), 
                 "badge": moder.get('badge', ''),
                 "permissions": {
-                    k: role[k] for k in ["can_fine","can_warn","can_wanted","can_clear","can_audit","can_currency"]
+                    k: role[k] for k in ["can_fine","can_warn","can_wanted","can_clear","can_audit"]
                 }
             }
         })
@@ -236,8 +275,7 @@ def get_stats():
         "total_warnings": len(db['warnings']),
         "total_vehicles": len(db['vehicles']), 
         "total_warrants": len([w for w in db['warrants'] if w.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts'] if not s.get('end')]),
-        "total_currency": sum(db.get('currency', {}).values())
+        "officers_on_duty": len([s for s in db['shifts'] if not s.get('end')])
     })
 
 # ============================================================
@@ -267,8 +305,7 @@ def get_player(nickname):
         "wanted": [w for w in db['wanted'] if w['nickname'].lower() == nickname.lower() and not w.get('expired')],
         "warnings": [w for w in db['warnings'] if w['nickname'].lower() == nickname.lower()],
         "vehicles": [v for v in db['vehicles'] if v.get('owner_nickname','').lower() == nickname.lower()],
-        "warrants": [w for w in db['warrants'] if w['nickname'].lower() == nickname.lower() and w.get('active')],
-        "balance": db.get('currency', {}).get(nickname, 0)
+        "warrants": [w for w in db['warrants'] if w['nickname'].lower() == nickname.lower() and w.get('active')]
     })
 
 @app.route('/api/players/<nickname>', methods=['PUT'])
@@ -309,16 +346,13 @@ def clear_player_data(nickname):
     db['fines'] = [f for f in db['fines'] if f['nickname'].lower() != nickname.lower()]
     db['wanted'] = [w for w in db['wanted'] if w['nickname'].lower() != nickname.lower()]
     db['warnings'] = [w for w in db['warnings'] if w['nickname'].lower() != nickname.lower()]
-    # Очищаем и валюту
-    if nickname in db.get('currency', {}):
-        del db['currency'][nickname]
     send_webhook_message(config.get('log_webhook_url',''), f"🧹 Очистка: {nickname}\nШтрафов: {len(pf)} | Розысков: {len(pw)}")
     add_audit("clear_data", f"Очищены все данные {nickname}")
     save_db()
     return jsonify({"success": True, "fines_removed": len(pf), "wanted_removed": len(pw)})
 
 # ============================================================
-# ШТРАФЫ
+# ⭐ ШТРАФЫ (ГЛАВНАЯ ФУНКЦИЯ) ⭐
 # ============================================================
 
 @app.route('/api/fines', methods=['GET'])
@@ -332,7 +366,9 @@ def get_fines():
 @app.route('/api/fines', methods=['POST'])
 def add_fine():
     data = request.json
-    nickname, reason = data.get('nickname'), data.get('reason')
+    nickname = data.get('nickname', '').strip()
+    reason = data.get('reason', '').strip()
+    
     if not nickname or not reason: 
         return jsonify({"success": False, "error": "Ник и причина обязательны"}), 400
     
@@ -342,7 +378,7 @@ def add_fine():
     
     article = data.get('article', '')
     full_reason = reason
-    fine_amount = 500  # По умолчанию
+    fine_amount = 500
     
     if article:
         a = next((x for x in db['articles'] if x['id'] == article), None)
@@ -352,6 +388,7 @@ def add_fine():
     
     issued_by = data.get('issued_by', 'CCPD#0000')
     
+    # === ОТПРАВКА ШТРАФА В ОСНОВНОЙ КАНАЛ (через вебхук) ===
     embed = {
         "title": f"📋 Штраф #{fid}", 
         "color": 9807270, 
@@ -359,7 +396,8 @@ def add_fine():
             {"name": "👤 Нарушитель", "value": nickname, "inline": True},
             {"name": "🕐 Время", "value": data.get('time', datetime.now().strftime('%H:%M')), "inline": True},
             {"name": "👮 Выдал", "value": issued_by, "inline": True},
-            {"name": "📋 Причина", "value": full_reason, "inline": False}
+            {"name": "📋 Причина", "value": full_reason, "inline": False},
+            {"name": "💰 Сумма", "value": f"{fine_amount}$", "inline": True}
         ], 
         "footer": {"text": f"CCSV3 POLICE | {datetime.now().strftime('%d.%m.%Y')}"}
     }
@@ -379,48 +417,29 @@ def add_fine():
         "amount": fine_amount
     }
     db['fines'].append(fine)
-    
-    # ============================================================
-    # АВТОМАТИЧЕСКОЕ СПИСАНИЕ ШТРАФА
-    # ============================================================
-    if data.get('auto_pay', True):
-        try:
-            if 'currency' not in db:
-                db['currency'] = {}
-            
-            current = db['currency'].get(nickname, 0)
-            if current >= fine_amount:
-                db['currency'][nickname] = current - fine_amount
-                
-                # Логируем в Discord
-                currency_embed = {
-                    "title": "💰 ШТРАФ ОПЛАЧЕН",
-                    "color": 0xFF4444,
-                    "fields": [
-                        {"name": "👤 Нарушитель", "value": nickname, "inline": True},
-                        {"name": "💰 Сумма", "value": f"-{fine_amount}$", "inline": True},
-                        {"name": "📋 Штраф", "value": f"#{fid} - {full_reason}", "inline": False},
-                        {"name": "💳 Остаток", "value": f"{db['currency'][nickname]}$", "inline": True}
-                    ],
-                    "footer": {"text": "CCSV3 POLICE • Авто-списание"}
-                }
-                send_webhook(config.get('currency_webhook_url', config.get('log_webhook_url', '')), currency_embed)
-                
-                add_audit("currency_fine", f"Штраф #{fid}: списано {fine_amount}$ с {nickname}", issued_by)
-            else:
-                send_webhook_message(config.get('log_webhook_url',''), 
-                    f"⚠️ У {nickname} недостаточно средств для штрафа #{fid} (нужно: {fine_amount}$, есть: {current}$)")
-                add_audit("currency_insufficient", f"Недостаточно средств у {nickname} для штрафа #{fid}", issued_by)
-            
-            save_db()
-        except Exception as e:
-            print(f"Ошибка списания: {e}")
-    
     add_audit("fine_add", f"Штраф #{fid} → {nickname}", issued_by)
     update_officer_achievements(issued_by)
     save_db()
     
-    return jsonify({"success": True, "fine": db['fines'][-1]})
+    # ============================================================
+    # ⭐ ОТПРАВКА КОМАНДЫ БОТУ (РОБЛОКС НИК → ПОИСК В КАНАЛЕ) ⭐
+    # ============================================================
+    command = f"/remove {nickname} {fine_amount} Штраф #{fid}: {reason}"
+    success, error = send_bot_command(command)
+    
+    if success:
+        send_webhook_message(config.get('log_webhook_url',''), 
+            f"🤖 Команда боту отправлена: `{command}`")
+    else:
+        send_webhook_message(config.get('log_webhook_url',''), 
+            f"❌ Ошибка отправки команды боту: {error}\nКоманда: `{command}`")
+    
+    return jsonify({
+        "success": True, 
+        "fine": db['fines'][-1],
+        "bot_command_sent": success,
+        "bot_command": command
+    })
 
 @app.route('/api/fines/<int:fid>', methods=['DELETE'])
 def delete_fine(fid):
@@ -647,8 +666,7 @@ def check_vehicle(plate):
     owner = next((p for p in db['players'] if p['nickname'].lower() == v.get('owner_nickname','').lower()), None)
     fines = [f for f in db['fines'] if f.get('nickname','').lower() == v.get('owner_nickname','').lower()]
     wanted = [w for w in db['wanted'] if w.get('nickname','').lower() == v.get('owner_nickname','').lower() and not w.get('expired')]
-    balance = db.get('currency', {}).get(v.get('owner_nickname', ''), 0)
-    return jsonify({"vehicle": v, "owner": owner, "fines": fines, "wanted": wanted, "balance": balance})
+    return jsonify({"vehicle": v, "owner": owner, "fines": fines, "wanted": wanted})
 
 # ============================================================
 # СМЕНЫ
@@ -773,8 +791,7 @@ def get_achievements(badge):
         "badge": badge, 
         "fines": 0, 
         "wanted": 0, 
-        "clears": 0,
-        "currency_actions": 0
+        "clears": 0
     })
     return jsonify(officer)
 
@@ -783,7 +800,7 @@ def get_leaderboard():
     for moder in config.get('moderators', {}).values(): 
         update_officer_achievements(moder.get('badge', ''))
     return jsonify(sorted(db['officer_achievements'], 
-                         key=lambda x: x['fines'] + x['wanted']*2 + x['clears'] + x.get('currency_actions', 0)*3, 
+                         key=lambda x: x['fines'] + x['wanted']*2 + x['clears'], 
                          reverse=True)[:5])
 
 # ============================================================
@@ -806,218 +823,28 @@ def get_articles():
     return jsonify(db['articles'])
 
 # ============================================================
-# ============================================================
-# ⭐ НОВЫЕ МАРШРУТЫ ДЛЯ ВАЛЮТЫ ⭐
-# ============================================================
+# ⭐ РУЧНАЯ ОТПРАВКА КОМАНДЫ БОТУ ⭐
 # ============================================================
 
-@app.route('/api/currency/<nickname>', methods=['GET'])
-def get_balance(nickname):
-    """Проверка баланса игрока"""
-    balance = db.get('currency', {}).get(nickname, 0)
-    return jsonify({
-        "nickname": nickname, 
-        "balance": balance,
-        "exists": nickname in db.get('currency', {})
-    })
-
-@app.route('/api/currency/all', methods=['GET'])
-def get_all_balances():
-    """Получить все балансы (топ)"""
-    sorted_balances = sorted(db.get('currency', {}).items(), key=lambda x: x[1], reverse=True)
-    return jsonify([{"nickname": k, "balance": v} for k, v in sorted_balances[:20]])
-
-@app.route('/api/currency/remove', methods=['POST'])
-def remove_currency():
+@app.route('/api/bot/command', methods=['POST'])
+def send_bot_command_api():
     """
-    Снять деньги с игрока
-    Использование: /remove user amount reason
+    Ручная отправка команды боту
+    POST /api/bot/command
+    {"command": "/remove JohnDoe 500 Штраф"}
     """
     data = request.json
-    nickname = data.get('nickname')
-    amount = data.get('amount', 0)
-    reason = data.get('reason', 'Списание средств')
-    officer = data.get('officer', 'SYSTEM')
+    command = data.get('command', '')
     
-    if not nickname:
-        return jsonify({"success": False, "error": "Укажите ник игрока"}), 400
+    if not command:
+        return jsonify({"success": False, "error": "Команда не указана"}), 400
     
-    if amount <= 0:
-        return jsonify({"success": False, "error": "Сумма должна быть больше 0"}), 400
+    success, error = send_bot_command(command)
     
-    if 'currency' not in db:
-        db['currency'] = {}
-    
-    current = db['currency'].get(nickname, 0)
-    
-    if current < amount:
-        return jsonify({
-            "success": False, 
-            "error": f"Недостаточно средств! Нужно: {amount}, есть: {current}"
-        }), 400
-    
-    db['currency'][nickname] = current - amount
-    
-    # Логируем транзакцию
-    db['currency_counter'] += 1
-    db['currency_log'].append({
-        "id": db['currency_counter'],
-        "nickname": nickname,
-        "amount": -amount,
-        "reason": reason,
-        "officer": officer,
-        "timestamp": datetime.now().isoformat()
-    })
-    
-    # Отправляем в Discord
-    embed = {
-        "title": "💰 СПИСАНИЕ СРЕДСТВ",
-        "color": 0xFF4444,
-        "fields": [
-            {"name": "👤 Игрок", "value": nickname, "inline": True},
-            {"name": "💰 Сумма", "value": f"-{amount}$", "inline": True},
-            {"name": "📋 Причина", "value": reason, "inline": False},
-            {"name": "👮 Офицер", "value": officer, "inline": True},
-            {"name": "💳 Остаток", "value": f"{db['currency'][nickname]}$", "inline": True}
-        ],
-        "footer": {"text": f"CCSV3 POLICE • /remove | #{datetime.now().strftime('%d.%m.%Y %H:%M')}"}
-    }
-    send_webhook(config.get('currency_webhook_url', config.get('log_webhook_url', '')), embed)
-    add_audit("currency_remove", f"Списано {amount}$ с {nickname} ({reason})", officer)
-    
-    # Обновляем достижения офицера
-    update_officer_achievements(officer)
-    
-    save_db()
-    return jsonify({
-        "success": True, 
-        "nickname": nickname, 
-        "removed": amount,
-        "new_balance": db['currency'][nickname]
-    })
-
-@app.route('/api/currency/add', methods=['POST'])
-def add_currency():
-    """
-    Начислить деньги игроку
-    Использование: /add user amount reason
-    """
-    data = request.json
-    nickname = data.get('nickname')
-    amount = data.get('amount', 0)
-    reason = data.get('reason', 'Начисление средств')
-    officer = data.get('officer', 'SYSTEM')
-    
-    if not nickname:
-        return jsonify({"success": False, "error": "Укажите ник игрока"}), 400
-    
-    if amount <= 0:
-        return jsonify({"success": False, "error": "Сумма должна быть больше 0"}), 400
-    
-    if 'currency' not in db:
-        db['currency'] = {}
-    
-    db['currency'][nickname] = db['currency'].get(nickname, 0) + amount
-    
-    # Логируем транзакцию
-    db['currency_counter'] += 1
-    db['currency_log'].append({
-        "id": db['currency_counter'],
-        "nickname": nickname,
-        "amount": amount,
-        "reason": reason,
-        "officer": officer,
-        "timestamp": datetime.now().isoformat()
-    })
-    
-    # Отправляем в Discord
-    embed = {
-        "title": "💰 НАЧИСЛЕНИЕ СРЕДСТВ",
-        "color": 0x44FF44,
-        "fields": [
-            {"name": "👤 Игрок", "value": nickname, "inline": True},
-            {"name": "💰 Сумма", "value": f"+{amount}$", "inline": True},
-            {"name": "📋 Причина", "value": reason, "inline": False},
-            {"name": "👮 Офицер", "value": officer, "inline": True},
-            {"name": "💳 Новый баланс", "value": f"{db['currency'][nickname]}$", "inline": True}
-        ],
-        "footer": {"text": f"CCSV3 POLICE • /add | #{datetime.now().strftime('%d.%m.%Y %H:%M')}"}
-    }
-    send_webhook(config.get('currency_webhook_url', config.get('log_webhook_url', '')), embed)
-    add_audit("currency_add", f"Начислено {amount}$ {nickname} ({reason})", officer)
-    
-    # Обновляем достижения офицера
-    update_officer_achievements(officer)
-    
-    save_db()
-    return jsonify({
-        "success": True, 
-        "nickname": nickname, 
-        "added": amount,
-        "new_balance": db['currency'][nickname]
-    })
-
-@app.route('/api/currency/transfer', methods=['POST'])
-def transfer_currency():
-    """
-    Перевод денег между игроками
-    """
-    data = request.json
-    from_nick = data.get('from')
-    to_nick = data.get('to')
-    amount = data.get('amount', 0)
-    reason = data.get('reason', 'Перевод средств')
-    
-    if not from_nick or not to_nick:
-        return jsonify({"success": False, "error": "Укажите отправителя и получателя"}), 400
-    
-    if amount <= 0:
-        return jsonify({"success": False, "error": "Сумма должна быть больше 0"}), 400
-    
-    if 'currency' not in db:
-        db['currency'] = {}
-    
-    current_from = db['currency'].get(from_nick, 0)
-    
-    if current_from < amount:
-        return jsonify({
-            "success": False, 
-            "error": f"У {from_nick} недостаточно средств! Нужно: {amount}, есть: {current_from}"
-        }), 400
-    
-    db['currency'][from_nick] = current_from - amount
-    db['currency'][to_nick] = db['currency'].get(to_nick, 0) + amount
-    
-    # Логируем
-    embed = {
-        "title": "💰 ПЕРЕВОД СРЕДСТВ",
-        "color": 0x44AAFF,
-        "fields": [
-            {"name": "📤 Отправитель", "value": from_nick, "inline": True},
-            {"name": "📥 Получатель", "value": to_nick, "inline": True},
-            {"name": "💰 Сумма", "value": f"{amount}$", "inline": True},
-            {"name": "📋 Причина", "value": reason, "inline": False}
-        ],
-        "footer": {"text": f"CCSV3 POLICE • /transfer | #{datetime.now().strftime('%d.%m.%Y %H:%M')}"}
-    }
-    send_webhook(config.get('currency_webhook_url', config.get('log_webhook_url', '')), embed)
-    add_audit("currency_transfer", f"Перевод {amount}$ от {from_nick} к {to_nick} ({reason})")
-    
-    save_db()
-    return jsonify({
-        "success": True,
-        "from": from_nick,
-        "to": to_nick,
-        "amount": amount,
-        "from_balance": db['currency'][from_nick],
-        "to_balance": db['currency'][to_nick]
-    })
-
-@app.route('/api/currency/log/<nickname>', methods=['GET'])
-def get_currency_log(nickname):
-    """История транзакций игрока"""
-    logs = [l for l in db.get('currency_log', []) if l['nickname'].lower() == nickname.lower()]
-    return jsonify(sorted(logs, key=lambda x: x['timestamp'], reverse=True)[:50])
+    if success:
+        return jsonify({"success": True, "message": f"Команда отправлена: {command}"})
+    else:
+        return jsonify({"success": False, "error": f"Не удалось отправить команду: {error}"}), 500
 
 # ============================================================
 # АНАЛИТИКА
@@ -1039,8 +866,7 @@ def get_analytics():
         "summary": {
             "total_fines": len(db['fines']), 
             "total_wanted": len(db['wanted']), 
-            "total_players": len(db['players']),
-            "total_currency": sum(db.get('currency', {}).values())
+            "total_players": len(db['players'])
         }
     })
 
@@ -1055,9 +881,9 @@ def export_data(dtype):
     w = csv.writer(output)
     
     if dtype == 'fines':
-        w.writerow(['ID','Ник','Причина','Статья','Время','Выдал','Дата'])
+        w.writerow(['ID','Ник','Причина','Статья','Время','Выдал','Дата','Сумма'])
         for f in db['fines']: 
-            w.writerow([f['id'],f['nickname'],f['reason'],f.get('article',''),f['time'],f['issued_by'],f.get('created_at','')])
+            w.writerow([f['id'],f['nickname'],f['reason'],f.get('article',''),f['time'],f['issued_by'],f.get('created_at',''),f.get('amount',0)])
     
     elif dtype == 'wanted':
         w.writerow(['ID','Ник','Причина','Звёзды','Объявил','Дата'])
@@ -1065,20 +891,14 @@ def export_data(dtype):
             w.writerow([x['id'],x['nickname'],x['reason'],x['stars'],x.get('issued_by',''),x.get('created_at','')])
     
     elif dtype == 'players':
-        w.writerow(['Ник','RP-имя','RP-возраст','Заметки','Ранг','Баланс','Дата'])
+        w.writerow(['Ник','RP-имя','RP-возраст','Заметки','Ранг','Дата'])
         for p in db['players']: 
-            balance = db.get('currency', {}).get(p['nickname'], 0)
-            w.writerow([p['nickname'],p.get('rp_name',''),p.get('rp_age',''),p.get('notes',''),p.get('player_rank',''), balance, p.get('created_at','')])
+            w.writerow([p['nickname'],p.get('rp_name',''),p.get('rp_age',''),p.get('notes',''),p.get('player_rank',''),p.get('created_at','')])
     
     elif dtype == 'vehicles':
         w.writerow(['Госномер','Модель','Владелец','Цвет'])
         for v in db['vehicles']: 
             w.writerow([v['plate'],v['model'],v.get('owner_nickname',''),v.get('color','')])
-    
-    elif dtype == 'currency':
-        w.writerow(['Ник','Баланс'])
-        for nick, bal in sorted(db.get('currency', {}).items(), key=lambda x: x[1], reverse=True):
-            w.writerow([nick, bal])
     
     else: 
         return jsonify({"error": "Неизвестный тип"}), 400
