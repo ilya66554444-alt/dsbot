@@ -16,7 +16,7 @@ try:
     with open(CONFIG_FILE, 'r', encoding='utf-8') as f:
         config = json.load(f)
 except:
-    config = {"moderators": {}, "fine_webhook_url": "", "wanted_webhook_url": "", "log_webhook_url": ""}
+    config = {"moderators": {}, "fine_webhook_url": "", "wanted_webhook_url": "", "log_webhook_url": "", "panic_webhook_url": ""}
 
 ROLES = {
     "кадет": {"name": "Кадет", "can_fine": True, "can_warn": True, "can_wanted": False, "can_clear": False, "can_audit": False},
@@ -36,7 +36,7 @@ else:
 
 default_db = {
     "players": [], "fines": [], "wanted": [], "warnings": [], "vehicles": [], "audit_log": [],
-    "warrants": [], "shifts": [], "officer_achievements": [],
+    "warrants": [], "shifts": [], "officer_achievements": [], "panic_log": [], "detentions": [],
     "articles": [
         {"id": "12.1", "title": "Проезд на красный свет", "fine": 500},
         {"id": "12.2", "title": "Превышение скорости", "fine": 300},
@@ -49,7 +49,7 @@ default_db = {
         {"id": "12.9", "title": "Нарушение общественного порядка", "fine": 350}
     ],
     "fine_counter": 0, "wanted_counter": 0, "warning_counter": 0, "audit_counter": 0,
-    "warrant_counter": 0, "shift_counter": 0
+    "warrant_counter": 0, "shift_counter": 0, "panic_counter": 0
 }
 for key, value in default_db.items():
     if key not in db:
@@ -59,14 +59,12 @@ def save_db():
     try:
         with open(DB_FILE, 'w', encoding='utf-8') as f:
             json.dump(db, f, ensure_ascii=False, indent=2)
-    except:
-        pass
+    except: pass
 
 def add_audit(action_type, description, moderator="Неизвестно"):
     db['audit_counter'] += 1
     db['audit_log'].append({"id": db['audit_counter'], "action_type": action_type, "description": description, "moderator": moderator, "timestamp": datetime.now().isoformat()})
-    if len(db['audit_log']) > 500:
-        db['audit_log'] = db['audit_log'][-500:]
+    if len(db['audit_log']) > 500: db['audit_log'] = db['audit_log'][-500:]
     save_db()
 
 def send_webhook(webhook_url, embed):
@@ -102,14 +100,11 @@ def get_or_create_player(nickname):
 def get_avatar_url(nickname):
     try:
         resp = requests.post("https://users.roblox.com/v1/usernames/users", json={"usernames": [nickname]}, timeout=5)
-        if resp.status_code == 200:
-            data = resp.json()
-            if data['data']:
-                user_id = data['data'][0]['id']
-                av_resp = requests.get(f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={user_id}&size=150x150&format=Png", timeout=5)
-                if av_resp.status_code == 200:
-                    av_data = av_resp.json()
-                    if av_data['data']: return av_data['data'][0]['imageUrl']
+        if resp.status_code == 200 and resp.json().get('data'):
+            uid = resp.json()['data'][0]['id']
+            av = requests.get(f"https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds={uid}&size=150x150&format=Png", timeout=5)
+            if av.status_code == 200 and av.json().get('data'):
+                return av.json()['data'][0]['imageUrl']
     except: pass
     return ""
 
@@ -122,18 +117,7 @@ def update_officer_achievements(badge):
     officer['fines'] = len([f for f in db['fines'] if f.get('issued_by') == badge])
     officer['wanted'] = len([w for w in db['wanted'] if w.get('issued_by') == badge])
     officer['clears'] = len([a for a in db['audit_log'] if a['action_type'] == 'clear_data' and a['moderator'] == badge])
-    officer['achievements'] = []
-    if officer['fines'] >= 10: officer['achievements'].append("📋 Новичок (10 штрафов)")
-    if officer['wanted'] >= 5: officer['achievements'].append("🚨 Охотник (5 розысков)")
-    if officer['clears'] >= 10: officer['achievements'].append("🧹 Чистильщик (10 очисток)")
     save_db()
-
-def get_moderator_from_request():
-    data = request.json or {}
-    username = data.get('moderator_key', '')
-    if username and username in config.get('moderators', {}):
-        return config['moderators'][username]
-    return None
 
 # ============================================================
 @app.route('/')
@@ -167,12 +151,9 @@ def auth():
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
     return jsonify({
-        "total_fines": len([f for f in db['fines'] if not f.get('expired')]),
-        "total_wanted": len([w for w in db['wanted'] if not w.get('expired')]),
-        "total_players": len(db['players']),
-        "total_warnings": len(db['warnings']),
-        "total_vehicles": len(db['vehicles']),
-        "total_warrants": len([w for w in db['warrants'] if w.get('active')]),
+        "total_fines": len(db['fines']), "total_wanted": len([w for w in db['wanted'] if not w.get('expired')]),
+        "total_players": len(db['players']), "total_warnings": len(db['warnings']),
+        "total_vehicles": len(db['vehicles']), "total_warrants": len([w for w in db['warrants'] if w.get('active')]),
         "officers_on_duty": len([s for s in db['shifts'] if not s.get('end')])
     })
 
@@ -180,8 +161,7 @@ def get_stats():
 @app.route('/api/players', methods=['GET'])
 def get_players():
     search = request.args.get('search', '').lower()
-    if search:
-        return jsonify([p for p in db['players'] if search in p['nickname'].lower() or search in p.get('rp_name','').lower() or search in p.get('notes','').lower()])
+    if search: return jsonify([p for p in db['players'] if search in p['nickname'].lower() or search in p.get('rp_name','').lower() or search in p.get('notes','').lower()])
     return jsonify(db['players'])
 
 @app.route('/api/players/<nickname>', methods=['GET'])
@@ -209,7 +189,7 @@ def update_player(nickname):
         db['players'].append(player)
     for k in ['rp_name','rp_age','notes','photo_url','player_rank']:
         if k in data: player[k] = data[k]
-    add_audit("player_update", f"Обновлены данные игрока {nickname}")
+    add_audit("player_update", f"Обновлены данные {nickname}")
     save_db()
     return jsonify({"success": True, "player": player})
 
@@ -219,7 +199,6 @@ def clear_player_data(nickname):
     if not player: return jsonify({"success": False, "error": "Игрок не найден"}), 404
     pf = [f for f in db['fines'] if f['nickname'].lower() == nickname.lower()]
     pw = [w for w in db['wanted'] if w['nickname'].lower() == nickname.lower()]
-    pwn = [w for w in db['warnings'] if w['nickname'].lower() == nickname.lower()]
     for f in pf:
         if f.get('discord_message_id'): delete_webhook_message(config.get('fine_webhook_url',''), f['discord_message_id'])
     for w in pw:
@@ -227,10 +206,10 @@ def clear_player_data(nickname):
     db['fines'] = [f for f in db['fines'] if f['nickname'].lower() != nickname.lower()]
     db['wanted'] = [w for w in db['wanted'] if w['nickname'].lower() != nickname.lower()]
     db['warnings'] = [w for w in db['warnings'] if w['nickname'].lower() != nickname.lower()]
-    send_webhook_message(config.get('log_webhook_url',''), f"🧹 Очистка: {nickname}\nШтрафов: {len(pf)} | Розысков: {len(pw)} | Предупреждений: {len(pwn)}")
+    send_webhook_message(config.get('log_webhook_url',''), f"🧹 Очистка: {nickname}\nШтрафов: {len(pf)} | Розысков: {len(pw)}")
     add_audit("clear_data", f"Очищены все данные {nickname}")
     save_db()
-    return jsonify({"success": True, "fines_removed": len(pf), "wanted_removed": len(pw), "warnings_removed": len(pwn)})
+    return jsonify({"success": True, "fines_removed": len(pf), "wanted_removed": len(pw)})
 
 # ---- FINES ----
 @app.route('/api/fines', methods=['GET'])
@@ -253,16 +232,16 @@ def add_fine():
     if article:
         a = next((x for x in db['articles'] if x['id'] == article), None)
         if a: full_reason = f"[{article}] {reason} (${a['fine']})"
-    issued_by = data.get('issued_by', 'LSPD#0000')
-    embed = {"title": f"📋 Штраф #{fid}", "color": 16766720, "fields": [
+    issued_by = data.get('issued_by', 'CCPD#0000')
+    embed = {"title": f"📋 Штраф #{fid}", "color": 9807270, "fields": [
         {"name": "👤 Нарушитель", "value": nickname, "inline": True},
         {"name": "🕐 Время", "value": data.get('time', datetime.now().strftime('%H:%M')), "inline": True},
         {"name": "👮 Выдал", "value": issued_by, "inline": True},
         {"name": "📋 Причина", "value": full_reason, "inline": False}
-    ], "footer": {"text": f"LSPD | {datetime.now().strftime('%d.%m.%Y')}"}}
+    ], "footer": {"text": f"CCSV3 POLICE | {datetime.now().strftime('%d.%m.%Y')}"}}
     msg_id = send_webhook(config.get('fine_webhook_url',''), embed)
     db['fines'].append({"id": fid, "nickname": nickname, "reason": full_reason, "article": article, "time": data.get('time', datetime.now().strftime('%H:%M')), "issued_by": issued_by, "discord_message_id": msg_id, "expired": False, "created_at": datetime.now().isoformat()})
-    add_audit("fine_add", f"Штраф #{fid} → {nickname}: {full_reason}", issued_by)
+    add_audit("fine_add", f"Штраф #{fid} → {nickname}", issued_by)
     update_officer_achievements(issued_by)
     save_db()
     return jsonify({"success": True, "fine": db['fines'][-1]})
@@ -292,7 +271,7 @@ def add_wanted():
     get_or_create_player(nickname)
     db['wanted_counter'] += 1
     wid = db['wanted_counter']
-    issued_by = data.get('issued_by', 'LSPD#0000')
+    issued_by = data.get('issued_by', 'CCPD#0000')
     colors = [0x808080, 0x00E676, 0xFFEA00, 0xFF9100, 0xFF1744, 0xD50000]
     emoji = ["⚪","🟢","🟡","🟠","🔴","💀"]
     levels = ["Не опасен","Низкая","Средняя","Высокая","Очень высокая","КРИТИЧЕСКАЯ"]
@@ -301,7 +280,7 @@ def add_wanted():
         {"name": "⚠️ Уровень", "value": f"{'⭐'*stars}{'☆'*(5-stars)} — {levels[stars]}", "inline": True},
         {"name": "📋 Причина", "value": reason, "inline": False},
         {"name": "👮 Объявил", "value": issued_by, "inline": True}
-    ], "footer": {"text": "LSPD | При задержании — дежурная часть"}}
+    ], "footer": {"text": "CCSV3 POLICE"}}
     if stars >= 4: embed["description"] = "🚨 @everyone СРОЧНО!"
     player = next((p for p in db['players'] if p['nickname'].lower() == nickname.lower()), None)
     if player and player.get('photo_url'): embed["image"] = {"url": player['photo_url']}
@@ -336,7 +315,7 @@ def add_warning():
     get_or_create_player(nickname)
     db['warning_counter'] += 1
     wid = db['warning_counter']
-    issued_by = data.get('issued_by', 'LSPD#0000')
+    issued_by = data.get('issued_by', 'CCPD#0000')
     db['warnings'].append({"id": wid, "nickname": nickname, "reason": reason, "type": data.get('type','verbal'), "issued_by": issued_by, "created_at": datetime.now().isoformat()})
     auto_wanted = False
     if len([w for w in db['warnings'] if w['nickname'].lower() == nickname.lower()]) >= 3:
@@ -351,8 +330,28 @@ def add_warning():
 @app.route('/api/warnings/<int:wid>', methods=['DELETE'])
 def delete_warning(wid):
     db['warnings'] = [w for w in db['warnings'] if w['id'] != wid]
-    add_audit("warning_remove", f"Предупреждение #{wid} снято")
     save_db()
+    return jsonify({"success": True})
+
+# ---- WARRANTS ----
+@app.route('/api/warrants', methods=['GET'])
+def get_warrants():
+    return jsonify([w for w in db['warrants'] if w.get('active')])
+
+@app.route('/api/warrants', methods=['POST'])
+def add_warrant():
+    data = request.json
+    db['warrant_counter'] += 1
+    warrant = {"id": db['warrant_counter'], "nickname": data.get('nickname'), "type": data.get('type','search'), "reason": data.get('reason',''), "issued_by": data.get('issued_by','CCPD#0000'), "expires": (datetime.now() + timedelta(hours=24)).isoformat(), "active": True, "created_at": datetime.now().isoformat()}
+    db['warrants'].append(warrant)
+    add_audit("warrant_add", f"Ордер #{warrant['id']} → {warrant['nickname']}")
+    save_db()
+    return jsonify({"success": True, "warrant": warrant})
+
+@app.route('/api/warrants/<int:wid>', methods=['DELETE'])
+def revoke_warrant(wid):
+    w = next((x for x in db['warrants'] if x['id'] == wid), None)
+    if w: w['active'] = False; add_audit("warrant_revoke", f"Ордер #{wid} отозван"); save_db()
     return jsonify({"success": True})
 
 # ---- VEHICLES ----
@@ -379,32 +378,17 @@ def add_vehicle():
 @app.route('/api/vehicles/<plate>', methods=['DELETE'])
 def delete_vehicle(plate):
     db['vehicles'] = [v for v in db['vehicles'] if v['plate'].upper() != plate.upper()]
-    add_audit("vehicle_remove", f"ТС {plate} удалено")
     save_db()
     return jsonify({"success": True})
 
-# ---- WARRANTS ----
-@app.route('/api/warrants', methods=['GET'])
-def get_warrants():
-    active_only = request.args.get('active', 'true') == 'true'
-    if active_only: return jsonify([w for w in db['warrants'] if w.get('active')])
-    return jsonify(db['warrants'])
-
-@app.route('/api/warrants', methods=['POST'])
-def add_warrant():
-    data = request.json
-    db['warrant_counter'] += 1
-    warrant = {"id": db['warrant_counter'], "nickname": data.get('nickname'), "type": data.get('type','search'), "reason": data.get('reason',''), "issued_by": data.get('issued_by','LSPD#0000'), "expires": (datetime.now() + timedelta(hours=24)).isoformat(), "active": True, "created_at": datetime.now().isoformat()}
-    db['warrants'].append(warrant)
-    add_audit("warrant_add", f"Ордер #{warrant['id']} → {warrant['nickname']}: {warrant['type']}")
-    save_db()
-    return jsonify({"success": True, "warrant": warrant})
-
-@app.route('/api/warrants/<int:wid>', methods=['DELETE'])
-def revoke_warrant(wid):
-    w = next((x for x in db['warrants'] if x['id'] == wid), None)
-    if w: w['active'] = False; add_audit("warrant_revoke", f"Ордер #{wid} отозван"); save_db()
-    return jsonify({"success": True})
+@app.route('/api/vehicle/check/<plate>', methods=['GET'])
+def check_vehicle(plate):
+    v = next((x for x in db['vehicles'] if x['plate'].upper() == plate.upper()), None)
+    if not v: return jsonify(None)
+    owner = next((p for p in db['players'] if p['nickname'].lower() == v.get('owner_nickname','').lower()), None)
+    fines = [f for f in db['fines'] if f.get('nickname','').lower() == v.get('owner_nickname','').lower()]
+    wanted = [w for w in db['wanted'] if w.get('nickname','').lower() == v.get('owner_nickname','').lower() and not w.get('expired')]
+    return jsonify({"vehicle": v, "owner": owner, "fines": fines, "wanted": wanted})
 
 # ---- SHIFTS ----
 @app.route('/api/shifts', methods=['GET'])
@@ -415,36 +399,77 @@ def get_shifts():
 def start_shift():
     data = request.json
     db['shift_counter'] += 1
-    shift = {"id": db['shift_counter'], "officer": data.get('officer',''), "start": datetime.now().isoformat(), "end": None}
+    shift = {"id": db['shift_counter'], "officer": data.get('officer',''), "code": data.get('code', 4), "start": datetime.now().isoformat(), "end": None}
     db['shifts'].append(shift)
-    add_audit("shift_start", f"Смена #{shift['id']} начата: {shift['officer']}")
+    add_audit("shift_start", f"Смена #{shift['id']} начата: {shift['officer']} (Code {shift['code']})")
     save_db()
     return jsonify({"success": True, "shift": shift})
 
 @app.route('/api/shifts/<int:sid>/end', methods=['POST'])
 def end_shift(sid):
     s = next((x for x in db['shifts'] if x['id'] == sid), None)
-    if s: s['end'] = datetime.now().isoformat(); add_audit("shift_end", f"Смена #{sid} завершена: {s['officer']}"); save_db()
+    if s: s['end'] = datetime.now().isoformat(); add_audit("shift_end", f"Смена #{sid} завершена"); save_db()
+    return jsonify({"success": True})
+
+@app.route('/api/shifts/<int:sid>/code', methods=['PUT'])
+def update_shift_code(sid):
+    s = next((x for x in db['shifts'] if x['id'] == sid), None)
+    if s: s['code'] = request.json.get('code', 4); add_audit("shift_code", f"Смена #{sid}: Code {s['code']}"); save_db()
     return jsonify({"success": True})
 
 @app.route('/api/shifts/active', methods=['GET'])
 def active_shifts():
     return jsonify([s for s in db['shifts'] if not s.get('end')])
 
+# ---- PANIC ----
+@app.route('/api/panic', methods=['POST'])
+def panic():
+    data = request.json
+    db['panic_counter'] += 1
+    officer = data.get('officer', 'Неизвестно')
+    location = data.get('location', 'Не указано')
+    embed = {"title": "🚨 ТРЕВОГА!", "description": "**Офицер запросил подкрепление!**", "color": 0xFF0000, "fields": [
+        {"name": "👮 Офицер", "value": officer, "inline": True},
+        {"name": "📍 Локация", "value": location, "inline": True},
+        {"name": "🕐 Время", "value": datetime.now().strftime('%H:%M:%S'), "inline": True}
+    ], "footer": {"text": "CCSV3 POLICE — Тревожная кнопка"}}
+    send_webhook(config.get('panic_webhook_url', config.get('log_webhook_url','')), embed)
+    db['panic_log'].append({"id": db['panic_counter'], "officer": officer, "location": location, "timestamp": datetime.now().isoformat()})
+    add_audit("panic", f"Тревога #{db['panic_counter']}: {officer}")
+    save_db()
+    return jsonify({"success": True, "panic_id": db['panic_counter']})
+
+# ---- DETENTIONS ----
+@app.route('/api/detentions', methods=['GET'])
+def get_detentions():
+    return jsonify(db['detentions'])
+
+@app.route('/api/detentions', methods=['POST'])
+def add_detention():
+    data = request.json
+    detention = {"id": len(db['detentions'])+1, "nickname": data.get('nickname'), "officer": data.get('officer'), "reason": data.get('reason'), "start": datetime.now().isoformat(), "released": False}
+    db['detentions'].append(detention)
+    add_audit("detention", f"Задержан {data.get('nickname')}: {data.get('reason')}")
+    save_db()
+    return jsonify({"success": True, "detention": detention})
+
+@app.route('/api/detentions/<int:did>/release', methods=['POST'])
+def release_detention(did):
+    d = next((x for x in db['detentions'] if x['id'] == did), None)
+    if d: d['released'] = True; d['end'] = datetime.now().isoformat(); add_audit("release", f"Освобождён {d['nickname']}"); save_db()
+    return jsonify({"success": True})
+
 # ---- ACHIEVEMENTS ----
 @app.route('/api/achievements/<badge>', methods=['GET'])
 def get_achievements(badge):
     update_officer_achievements(badge)
-    officer = next((o for o in db['officer_achievements'] if o['badge'] == badge), None)
-    if not officer: return jsonify({"badge": badge, "fines": 0, "wanted": 0, "clears": 0, "achievements": []})
+    officer = next((o for o in db['officer_achievements'] if o['badge'] == badge), {"badge": badge, "fines": 0, "wanted": 0, "clears": 0})
     return jsonify(officer)
 
 @app.route('/api/leaderboard', methods=['GET'])
 def get_leaderboard():
-    for moder in config.get('moderators', {}).values():
-        update_officer_achievements(moder.get('badge', ''))
-    board = sorted(db['officer_achievements'], key=lambda x: x['fines'] + x['wanted']*2 + x['clears'], reverse=True)[:5]
-    return jsonify(board)
+    for moder in config.get('moderators', {}).values(): update_officer_achievements(moder.get('badge', ''))
+    return jsonify(sorted(db['officer_achievements'], key=lambda x: x['fines'] + x['wanted']*2 + x['clears'], reverse=True)[:5])
 
 # ---- AUDIT ----
 @app.route('/api/audit', methods=['GET'])
@@ -452,8 +477,7 @@ def get_audit():
     limit = request.args.get('limit', 100, type=int)
     atype = request.args.get('type', '')
     logs = [l for l in db['audit_log'] if not atype or l['action_type'] == atype]
-    logs = sorted(logs, key=lambda x: x['timestamp'], reverse=True)[:limit]
-    return jsonify(logs)
+    return jsonify(sorted(logs, key=lambda x: x['timestamp'], reverse=True)[:limit])
 
 # ---- ARTICLES ----
 @app.route('/api/articles', methods=['GET'])
@@ -465,19 +489,14 @@ def get_articles():
 def get_analytics():
     fc = Counter(f['nickname'] for f in db['fines'])
     oc = Counter(f.get('issued_by','Неизвестно') for f in db['fines'])
-    ac = Counter(f.get('article','Без статьи') for f in db['fines'])
     df = defaultdict(int)
-    cutoff = (datetime.now() - timedelta(days=30)).isoformat()
     for f in db['fines']:
-        if f.get('created_at','') >= cutoff: df[f['created_at'][:10]] += 1
-    ws = Counter(w['stars'] for w in db['wanted'])
+        if f.get('created_at',''): df[f['created_at'][:10]] += 1
     return jsonify({
         "top_offenders": [{"nickname": n, "count": c} for n,c in fc.most_common(10)],
         "top_officers": [{"name": n, "count": c} for n,c in oc.most_common(10)],
-        "top_articles": [{"article": a, "count": c} for a,c in ac.most_common(10)],
-        "daily_fines": [{"date": d, "count": c} for d,c in sorted(df.items())],
-        "wanted_by_stars": {str(k): v for k,v in ws.items()},
-        "summary": {"total_fines": len(db['fines']), "total_wanted": len(db['wanted']), "total_players": len(db['players']), "total_warnings": len(db['warnings']), "total_vehicles": len(db['vehicles'])}
+        "daily_fines": [{"date": d, "count": c} for d,c in sorted(df.items())[-30:]],
+        "summary": {"total_fines": len(db['fines']), "total_wanted": len(db['wanted']), "total_players": len(db['players'])}
     })
 
 # ---- EXPORT ----
