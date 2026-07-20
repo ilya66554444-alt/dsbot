@@ -1,9 +1,9 @@
-{{
+{
     "fine_webhook_url": "https://discord.com/api/webhooks/1528473590599647252/TNN2OAnTESGTl0W7JToYPsS-8guMHZffoYhFhHAjuNaplqLbjlccM3L3n1uBs7hU_iBG",
     "wanted_webhook_url": "https://discord.com/api/webhooks/1528473706836262923/kfn0lGzH6r4Iw3H0SZhXuUEWW1KLRdObGR4uJiOl7nGzx2-d0IzHzIxJRWGTI7lVJb54",
     "log_webhook_url": "https://discord.com/api/webhooks/1528475158145273947/_AyheR233p89bYtWnx9rSOpic3J_962op9_xL9aBhRC6i7UlVKwQNPSi8-j1TPZPOl8T",
-    "panic_webhook_url": "https://discord.com/api/webhooks/1528734762108457012/EZDqOwBTUIOilin-TP4y2NtrQ6BrGgZNnY39mg3pNOHda8ifp5okJJOqoSK-m4GMZr7J",
-    "currency_webhook_url": "https://discord.com/api/webhooks/1528734823659868232/_V--Zn3zdPWOZ9vwpcsOc76foZutxacjXJi4SOHnu_Wa2Pwt1Umrmx9kmlNSol8MNLPT",
+    "panic_webhook_url": "https://discord.com/api/webhooks/1528734759440613508/AhkC7P4vNqJNJra9cTRqJe1gQRwHxVPKBsJ-w_6p8n2_vuIw7y9sqc0kUftza6AveyQd",
+    "bot_channel_id": "1528734741342322710",
     "server_port": 5000,
     "moderators": {
     "cadet-4516": {"password": "sv4-682gjs-iw85-fa#CCPD", "rank": "кадет", "rp_name": "Джонсон", "badge": "CCPD#4516"},
