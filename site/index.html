@@ -205,28 +205,33 @@
                 <div id="toast" class="toast"></div>
 
                 <!-- DESKTOP -->
-                <div class="section active" id="desktopSection">
-                    <div style="text-align:center;padding:6px 0;">
-                        <div class="badge-display" id="desktopBadge">CCPD#0000</div>
-                        <p style="font-size:12px;color:var(--text-secondary);" id="desktopRank">Ранг</p>
-                        <div class="shift-box">
-                            <div class="shift-dot off" id="shiftDot"></div>
-                            <span class="shift-text" id="shiftLabel">Не на смене</span>
-                            <button class="shift-btn" id="shiftBtn" onclick="toggleShift()">Начать</button>
-                        </div>
-                    </div>
-                    <div class="card"><h3>📊 Сводка</h3><div id="desktopStats"></div></div>
-                    <div class="card" id="achievementsCard" style="display:none;"><h3>🏆 Достижения</h3><div id="achievementsList"></div></div>
-                    <div class="card"><h3>🏅 Доска почёта</h3><div id="leaderboardList"></div></div>
-                    <div class="desktop-grid">
-                        <div class="desktop-icon" onclick="switchTab('fines')"><div class="icon">📋</div><div class="label">Штраф</div></div>
-                        <div class="desktop-icon" onclick="switchTab('wanted')"><div class="icon">🚨</div><div class="label">Розыск</div></div>
-                        <div class="desktop-icon" onclick="switchTab('players')"><div class="icon">👤</div><div class="label">Игрок</div></div>
-                        <div class="desktop-icon" onclick="switchTab('vehicles')"><div class="icon">🚗</div><div class="label">Авто</div></div>
-                        <div class="desktop-icon" onclick="switchTab('warnings')"><div class="icon">⚠️</div><div class="label">Предупр.</div></div>
-                        <div class="desktop-icon" onclick="switchTab('warrants')"><div class="icon">📜</div><div class="label">Ордер</div></div>
-                    </div>
-                </div>
+       <!-- DESKTOP -->
+<div class="section active" id="desktopSection">
+    <div style="text-align:center;padding:6px 0;">
+        <div class="badge-display" id="desktopBadge">CCPD#0000</div>
+        <p style="font-size:12px;color:var(--text-secondary);" id="desktopRank">Ранг</p>
+        <div class="shift-box">
+            <div class="shift-dot off" id="shiftDot"></div>
+            <span class="shift-text" id="shiftLabel">Не на смене</span>
+            <button class="shift-btn" id="shiftBtn" onclick="toggleShift()">Начать</button>
+        </div>
+        <div style="display:flex;gap:6px;justify-content:center;margin-top:6px;">
+            <button class="btn btn-info btn-sm" onclick="openProfile()" style="width:auto;">👤 Профиль</button>
+            <button class="btn btn-danger btn-sm" onclick="logout()" style="width:auto;">🚪 Выйти</button>
+        </div>
+    </div>
+    <div class="card"><h3>📊 Сводка</h3><div id="desktopStats"></div></div>
+    <div class="card" id="achievementsCard" style="display:none;"><h3>🏆 Достижения</h3><div id="achievementsList"></div></div>
+    <div class="card"><h3>🏅 Доска почёта</h3><div id="leaderboardList"></div></div>
+    <div class="desktop-grid">
+        <div class="desktop-icon" onclick="switchTab('fines')"><div class="icon">📋</div><div class="label">Штраф</div></div>
+        <div class="desktop-icon" onclick="switchTab('wanted')"><div class="icon">🚨</div><div class="label">Розыск</div></div>
+        <div class="desktop-icon" onclick="switchTab('players')"><div class="icon">👤</div><div class="label">Игрок</div></div>
+        <div class="desktop-icon" onclick="switchTab('vehicles')"><div class="icon">🚗</div><div class="label">Авто</div></div>
+        <div class="desktop-icon" onclick="switchTab('warnings')"><div class="icon">⚠️</div><div class="label">Предупр.</div></div>
+        <div class="desktop-icon" onclick="switchTab('warrants')"><div class="icon">📜</div><div class="label">Ордер</div></div>
+    </div>
+</div>
 
                 <!-- FINES -->
                 <div class="section" id="finesSection">
