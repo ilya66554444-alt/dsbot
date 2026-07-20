@@ -545,21 +545,16 @@
         }
     });
 
-    function switchTab(tab) {
-    // Убираем active со всех табов
+   function switchTab(tab) {
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-    // Убираем active со всех секций
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     
-    // Активируем нужный таб
     const tabBtn = document.querySelector(`[data-tab="${tab}"]`);
     if (tabBtn) tabBtn.classList.add('active');
     
-    // Активируем нужную секцию
     const section = document.getElementById(tab + 'Section');
     if (section) section.classList.add('active');
     
-    // Загружаем данные для раздела
     if (tab === 'fines') loadFines();
     if (tab === 'wanted') loadWanted();
     if (tab === 'players') loadPlayers();
