@@ -2,445 +2,1742 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>CCSV3 POLICE v4.0</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCSV3 Police — Планшет v4.0</title>
     <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#636e72">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="CCSV3">
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: rgba(20,20,30,0.95); --glass: rgba(255,255,255,0.03); --glass-border: rgba(255,255,255,0.06);
-            --text: #ccc; --text-secondary: #888; --accent: #636e72; --accent-glow: rgba(99,110,114,0.2);
-            --success: #00b894; --warning: #fdcb6e; --danger: #d63031; --info: #74b9ff;
-            --radius: 16px; --inner-radius: 10px;
+        /* ============================================================
+           RESET & BASE
+           ============================================================ */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        :root.light { --bg: rgba(240,242,245,0.95); --glass: rgba(255,255,255,0.5); --glass-border: rgba(0,0,0,0.08); --text: #2d3436; --text-secondary: #636e72; }
-        * { margin:0; padding:0; box-sizing:border-box; }
-        html, body { height:100%; overflow:hidden; }
+
         body {
-            font-family:'Inter',sans-serif; background:#0a0a0f; color:var(--text);
-            display:flex; justify-content:center; align-items:center; padding:16px;
-            background-image: radial-gradient(ellipse at 30% 20%, rgba(99,110,114,0.08) 0%, transparent 50%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e17;
+            color: #e0e0e0;
+            padding: 20px;
+            min-height: 100vh;
         }
-        .tablet-frame {
-            width:500px; max-width:100%; height:100%; max-height:820px;
-            background:rgba(30,30,40,0.8); border-radius:32px; padding:10px;
-            box-shadow:0 0 0 1px rgba(255,255,255,0.05),0 20px 50px rgba(0,0,0,0.6);
-            display:flex; flex-direction:column; backdrop-filter:blur(20px);
+
+        ::-webkit-scrollbar {
+            width: 6px;
         }
-        .tablet-screen {
-            background:var(--bg); border-radius:24px; overflow:hidden; flex:1;
-            display:flex; flex-direction:column; border:1px solid var(--glass-border);
-            backdrop-filter:blur(12px);
+        ::-webkit-scrollbar-track {
+            background: #0a1424;
         }
-        .status-bar { display:flex; justify-content:space-between; padding:8px 18px 4px; font-size:10px; color:var(--text-secondary); flex-shrink:0; }
-        .header { padding:4px 18px 8px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0; }
-        .header .badge { display:inline-block; background:var(--accent); color:#fff; padding:4px 10px; border-radius:10px; font-size:9px; font-weight:700; text-transform:uppercase; }
-        .header h1 { font-size:17px; font-weight:700; }
-        .tabs-outer { padding:0 14px 4px; flex-shrink:0; }
-        .tabs-scroll { overflow-x:auto; white-space:nowrap; -webkit-overflow-scrolling:touch; padding-bottom:4px; }
-        .tabs-scroll::-webkit-scrollbar { height:2px; }
-        .tabs { display:inline-flex; gap:3px; }
-        .tab {
-            padding:7px 12px; background:var(--glass); border:1px solid var(--glass-border);
-            color:var(--text-secondary); cursor:pointer; border-radius:16px;
-            font-size:10px; font-weight:500; white-space:nowrap; user-select:none; transition:all 0.25s; flex-shrink:0;
+        ::-webkit-scrollbar-thumb {
+            background: #1a3a5a;
+            border-radius: 3px;
         }
-        .tab.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .content-area { flex:1; overflow-y:auto; padding:0 14px 10px; -webkit-overflow-scrolling:touch; }
-        .section { display:none; }
-        .section.active { display:block; animation:fadeIn 0.3s ease; }
-        @keyframes fadeIn { from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);} }
-        .card { background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--inner-radius); padding:12px; margin-bottom:8px; backdrop-filter:blur(8px); }
-        .card h2 { font-size:13px; font-weight:600; margin-bottom:6px; }
-        .card h3 { font-size:12px; font-weight:600; margin:10px 0 4px; }
-        input, textarea, select {
-            width:100%; padding:8px 10px; background:rgba(255,255,255,0.03); border:1px solid var(--glass-border);
-            color:var(--text); border-radius:8px; font-size:11px; margin-bottom:5px; outline:none; font-family:'Inter',sans-serif;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #2a5a7a;
         }
-        input:focus, select:focus { border-color:var(--accent); }
-        input:disabled, select:disabled { opacity:0.35; }
-        .btn { padding:8px 14px; border:none; border-radius:8px; cursor:pointer; font-size:11px; font-weight:500; width:100%; text-align:center; transition:all 0.25s; }
-        .btn-primary { background:var(--accent); color:#fff; }
-        .btn-danger { background:transparent; color:var(--danger); border:1px solid rgba(214,48,49,0.3); }
-        .btn-info { background:transparent; color:var(--info); border:1px solid rgba(116,185,255,0.3); }
-        .btn-warn { background:transparent; color:var(--warning); border:1px solid rgba(253,203,110,0.3); }
-        .btn-sm { padding:5px 10px; font-size:10px; width:auto; }
-        .list-item {
-            background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:8px;
-            padding:8px 10px; margin:3px 0; display:flex; justify-content:space-between; align-items:center;
+
+        /* ============================================================
+           CONTAINER
+           ============================================================ */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
         }
-        .list-item.danger { border-left:2px solid var(--danger); }
-        .player-card {
-            background:rgba(255,255,255,0.02); border:1px solid var(--glass-border); border-radius:8px;
-            padding:8px; margin:3px 0; cursor:pointer; display:flex; align-items:center; gap:8px;
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .header {
+            background: linear-gradient(135deg, #0d1b2a, #1b3a5c);
+            padding: 20px 25px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            border: 1px solid #2a4a6a;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
-        .player-card .avatar { width:36px; height:36px; border-radius:50%; object-fit:cover; }
-        .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; justify-content:center; align-items:center; z-index:1500; backdrop-filter:blur(4px); }
-        .modal { background:var(--bg); border:1px solid var(--glass-border); border-radius:var(--radius); padding:16px; width:420px; max-width:92vw; max-height:78vh; overflow-y:auto; }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-left .logo {
+            font-size: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #4fc3f7;
+            text-shadow: 0 0 20px rgba(79, 195, 247, 0.3);
+            font-weight: 700;
+        }
+
+        .header h1 span {
+            color: #8ab4d6;
+            font-weight: 400;
+            font-size: 16px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #1a3a5a;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            border: 1px solid #2a5a7a;
+            color: #8ab4d6;
+        }
+
+        .badge-officer {
+            border-color: #4fc3f7;
+            color: #4fc3f7;
+            font-weight: 600;
+        }
+
+        .badge-rank {
+            border-color: #ffd54f;
+            color: #ffd54f;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+        }
+
+        .status-dot.online {
+            background: #4caf50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        .status-dot.offline {
+            background: #f44336;
+            box-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+
+        .btn-shift {
+            background: #2e7d32;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: 600;
+        }
+
+        .btn-shift:hover {
+            background: #1b5e20;
+            transform: scale(1.05);
+        }
+
+        .btn-shift.off {
+            background: #c62828;
+        }
+
+        .btn-shift.off:hover {
+            background: #b71c1c;
+        }
+
+        /* ============================================================
+           GRID
+           ============================================================ */
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+        }
+
+        /* ============================================================
+           CARDS
+           ============================================================ */
+        .card {
+            background: #111b2e;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #1a3a5a;
+            transition: border-color 0.3s;
+        }
+
+        .card:hover {
+            border-color: #2a5a7a;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #1a3a5a;
+            padding-bottom: 10px;
+        }
+
+        .card h3 {
+            color: #4fc3f7;
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .card h3 .icon {
+            margin-right: 8px;
+        }
+
+        .card .count {
+            background: #0a1424;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #8ab4d6;
+        }
+
+        /* ============================================================
+           FORMS
+           ============================================================ */
+        .form-group {
+            margin-bottom: 14px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 4px;
+            color: #8ab4d6;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 14px;
+            background: #0a1424;
+            border: 1px solid #1a3a5a;
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #4fc3f7;
+            box-shadow: 0 0 15px rgba(79, 195, 247, 0.08);
+        }
+
+        .form-control::placeholder {
+            color: #4a6a8a;
+        }
+
+        .form-control option {
+            background: #0a1424;
+            color: #e0e0e0;
+        }
+
+        select.form-control {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238ab4d6' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        select.form-control option:checked {
+            background: #1a3a5a;
+        }
+
+        /* ============================================================
+           BUTTONS
+           ============================================================ */
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: scale(0.96);
+        }
+
+        .btn-primary {
+            background: #1a73e8;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #1557b0;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(26, 115, 232, 0.3);
+        }
+
+        .btn-danger {
+            background: #d32f2f;
+            color: white;
+        }
+        .btn-danger:hover {
+            background: #b71c1c;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(211, 47, 47, 0.3);
+        }
+
+        .btn-success {
+            background: #2e7d32;
+            color: white;
+        }
+        .btn-success:hover {
+            background: #1b5e20;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(46, 125, 50, 0.3);
+        }
+
+        .btn-warning {
+            background: #f57c00;
+            color: white;
+        }
+        .btn-warning:hover {
+            background: #e65100;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 124, 0, 0.3);
+        }
+
+        .btn-purple {
+            background: #7b1fa2;
+            color: white;
+        }
+        .btn-purple:hover {
+            background: #6a1b9a;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(123, 31, 162, 0.3);
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: #8ab4d6;
+            border: 1px solid #1a3a5a;
+        }
+        .btn-outline:hover {
+            background: #1a3a5a;
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 5px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+        }
+
+        .btn-xs {
+            padding: 3px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+
+        /* ============================================================
+           TABLES
+           ============================================================ */
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 10px;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .table th {
+            background: #0a1424;
+            padding: 10px 12px;
+            text-align: left;
+            color: #8ab4d6;
+            border-bottom: 2px solid #1a3a5a;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .table td {
+            padding: 9px 12px;
+            border-bottom: 1px solid #0a1424;
+            vertical-align: middle;
+        }
+
+        .table tr:hover td {
+            background: #0a1424;
+        }
+
+        .table .text-muted {
+            color: #4a6a8a;
+        }
+
+        .table .stars {
+            color: #ffd54f;
+            letter-spacing: 2px;
+        }
+
+        /* ============================================================
+           STATUS BADGES
+           ============================================================ */
+        .status-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .status-badge.active {
+            background: #1b5e20;
+            color: #a5d6a7;
+        }
+        .status-badge.warning {
+            background: #e65100;
+            color: #ffe0b2;
+        }
+        .status-badge.danger {
+            background: #c62828;
+            color: #ef9a9a;
+        }
+        .status-badge.info {
+            background: #0d47a1;
+            color: #90caf9;
+        }
+        .status-badge.muted {
+            background: #1a2a3a;
+            color: #6a8aaa;
+        }
+
+        /* ============================================================
+           MISC
+           ============================================================ */
+        .flex {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+
+        .text-muted {
+            color: #4a6a8a;
+            font-size: 13px;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+
+        .empty-state {
+            padding: 20px;
+            text-align: center;
+            color: #4a6a8a;
+        }
+
+        .empty-state .icon {
+            font-size: 32px;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-width: 400px;
+        }
+
         .toast {
-            position:fixed; top:10px; right:10px; padding:8px 16px; border-radius:10px;
-            font-weight:500; font-size:11px; z-index:2000; opacity:0; transform:translateX(100px);
-            transition:all 0.3s ease; background:var(--bg); border:1px solid var(--glass-border); backdrop-filter:blur(10px);
+            padding: 14px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            border-left: 4px solid;
         }
-        .toast.show { opacity:1; transform:translateX(0); }
-        .toast.success { border-color:var(--success); color:var(--success); }
-        .toast.error { border-color:var(--danger); color:var(--danger); }
-        .login-overlay { position:absolute; inset:0; background:var(--bg); display:flex; justify-content:center; align-items:center; border-radius:24px; z-index:20; }
-        .login-box { text-align:center; padding:24px; max-width:300px; }
-        .login-box .shield { font-size:48px; margin-bottom:10px; }
-        .login-error { background:rgba(214,48,49,0.1); border:1px solid var(--danger); border-radius:8px; padding:6px 10px; margin-bottom:10px; color:var(--danger); font-size:10px; display:none; }
-        .login-error.show { display:block; }
-        .login-spinner { display:none; width:18px; height:18px; border:2px solid rgba(255,255,255,0.15); border-top-color:#fff; border-radius:50%; animation:spin 0.6s linear infinite; margin:0 auto 8px; }
-        .login-spinner.show { display:block; }
-        @keyframes spin { to{transform:rotate(360deg);} }
-        .desktop-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; padding:6px 0; }
-        .desktop-icon {
-            background:var(--glass); border:1px solid var(--glass-border); border-radius:var(--inner-radius);
-            padding:14px; text-align:center; cursor:pointer; transition:all 0.25s;
+
+        .toast-success {
+            background: #1b3a2a;
+            border-color: #4caf50;
+            color: #a5d6a7;
         }
-        .desktop-icon:hover { border-color:var(--accent); transform:translateY(-2px); }
-        .desktop-icon .icon { font-size:28px; margin-bottom:4px; }
-        .desktop-icon .label { font-size:10px; font-weight:500; }
-        .badge-display { display:inline-block; background:var(--accent); color:#fff; padding:6px 12px; border-radius:14px; font-size:12px; font-weight:700; margin-bottom:4px; }
-        .quick-stat { display:flex; align-items:center; gap:8px; padding:10px; background:rgba(255,255,255,0.02); border-radius:8px; margin:4px 0; }
-        .shift-box { display:inline-flex; align-items:center; gap:8px; padding:10px 16px; background:var(--glass); border:1px solid var(--glass-border); border-radius:14px; margin:6px 0; }
-        .shift-dot { width:10px; height:10px; border-radius:50%; background:var(--danger); transition:all 0.3s; }
-        .shift-dot.on { background:var(--success); box-shadow:0 0 10px var(--success); }
-        .shift-text { font-size:11px; font-weight:500; }
-        .shift-btn { padding:8px 18px; border-radius:20px; font-size:11px; font-weight:600; cursor:pointer; border:1px solid var(--success); background:transparent; color:var(--success); margin-left:8px; }
-        .shift-btn.end { border-color:var(--danger); color:var(--danger); }
-        .achieve-badge { display:inline-block; background:rgba(253,203,110,0.1); color:var(--warning); padding:3px 7px; border-radius:8px; font-size:9px; margin:2px; }
-        .code-btn { padding:4px 10px; border-radius:12px; font-size:10px; font-weight:600; cursor:pointer; border:1px solid var(--glass-border); background:transparent; color:var(--text-secondary); margin:0 2px; }
-        .code-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-        .panic-btn {
-            background:var(--danger); color:#fff; border:none; padding:10px 20px; border-radius:20px;
-            font-size:12px; font-weight:700; cursor:pointer; animation:pulse 2s infinite; width:auto;
+
+        .toast-error {
+            background: #3a1a1a;
+            border-color: #f44336;
+            color: #ef9a9a;
         }
-        @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(214,48,49,0.4);} 50%{box-shadow:0 0 0 12px rgba(214,48,49,0);} }
+
+        .toast-info {
+            background: #1a2a4a;
+            border-color: #4fc3f7;
+            color: #90caf9;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 1024px) {
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 12px; }
+            .grid { grid-template-columns: 1fr; }
+            .grid-3 { grid-template-columns: 1fr; }
+            .header { flex-direction: column; text-align: center; }
+            .header-left { flex-direction: column; }
+            .header-right { justify-content: center; }
+            .card { padding: 15px; }
+            .table { font-size: 12px; }
+            .table th, .table td { padding: 6px 8px; }
+            .btn { padding: 8px 16px; font-size: 13px; }
+            .toast-container { max-width: calc(100% - 24px); bottom: 12px; right: 12px; }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 { font-size: 18px; }
+            .badge { font-size: 11px; padding: 4px 12px; }
+            .form-control { font-size: 13px; padding: 8px 12px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="tablet-frame">
-    <div class="tablet-screen">
-        <div class="login-overlay" id="loginScreen">
-            <div class="login-box">
-                <div class="shield">🛡️</div>
-                <h2>CCSV3 POLICE</h2>
-                <p style="font-size:11px;color:var(--text-secondary);margin-bottom:14px;">Планшет v4.0</p>
-                <div class="login-error" id="loginError"></div>
-                <div class="login-spinner" id="loginSpinner"></div>
-                <input type="text" id="loginInput" placeholder="Логин" style="margin-bottom:6px" autocomplete="off">
-                <input type="password" id="passwordInput" placeholder="Пароль" style="margin-bottom:8px">
-                <button class="btn btn-primary" id="loginBtn" onclick="login()">🔐 Авторизация</button>
+    <!-- ============================================================
+    TOAST CONTAINER
+    ============================================================ -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- ============================================================
+    MAIN CONTAINER
+    ============================================================ -->
+    <div class="container">
+
+        <!-- ============================================================
+        HEADER
+        ============================================================ -->
+        <header class="header">
+            <div class="header-left">
+                <span class="logo">🚔</span>
+                <div>
+                    <h1>CCSV3 POLICE <span>— Планшет v4.0</span></h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <span class="badge badge-officer" id="officerBadge">CCPD#0000</span>
+                <span class="badge badge-rank" id="officerRank">Кадет</span>
+                <span class="badge" id="shiftStatus">
+                    <span class="status-dot offline" id="shiftDot"></span>
+                    <span id="shiftText">Не на смене</span>
+                </span>
+                <button class="btn-shift" id="shiftBtn" onclick="toggleShift()">Начать смену</button>
+            </div>
+        </header>
+
+        <!-- ============================================================
+        STATS ROW
+        ============================================================ -->
+        <div class="grid-3" style="margin-bottom: 20px;">
+            <div class="card" style="border-left: 3px solid #4fc3f7;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #8ab4d6;">📋 Штрафов</span>
+                    <span style="font-size: 28px; font-weight: 700; color: #4fc3f7;" id="statFines">0</span>
+                </div>
+            </div>
+            <div class="card" style="border-left: 3px solid #f44336;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #8ab4d6;">🚨 Розысков</span>
+                    <span style="font-size: 28px; font-weight: 700; color: #f44336;" id="statWanted">0</span>
+                </div>
+            </div>
+            <div class="card" style="border-left: 3px solid #ffd54f;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="color: #8ab4d6;">👤 Игроков</span>
+                    <span style="font-size: 28px; font-weight: 700; color: #ffd54f;" id="statPlayers">0</span>
+                </div>
             </div>
         </div>
 
-        <div id="mainApp" style="display:none;flex-direction:column;height:100%">
-            <div class="status-bar"><span class="time" id="liveTime">12:00</span><span id="statusRight">📶 🔋 CCPD</span></div>
-            <div class="header">
-                <div><div class="badge">CCSV3 Police</div><h1>Планшет v4.0</h1></div>
-                <button onclick="toggleTheme()" style="width:30px;height:30px;border-radius:50%;background:var(--glass);border:1px solid var(--glass-border);cursor:pointer;font-size:14px;color:var(--text);">🌓</button>
-            </div>
+        <!-- ============================================================
+        GRID: ШТРАФЫ + РОЗЫСК
+        ============================================================ -->
+        <div class="grid">
 
-            <div class="tabs-outer">
-                <div class="tabs-scroll" id="tabsScroll">
-                    <div class="tabs">
-                        <button class="tab active" onclick="switchTab('desktop')">🏠</button>
-                        <button class="tab" onclick="switchTab('fines')">📋</button>
-                        <button class="tab" onclick="switchTab('wanted')">🚨</button>
-                        <button class="tab" onclick="switchTab('players')">👥</button>
-                        <button class="tab" onclick="switchTab('warnings')">⚠️</button>
-                        <button class="tab" onclick="switchTab('warrants')">📜</button>
-                        <button class="tab" onclick="switchTab('vehicles')">🚗</button>
-                        <button class="tab" onclick="switchTab('articles')">📖</button>
-                        <button class="tab" onclick="switchTab('analytics')">📊</button>
-                        <button class="tab" onclick="switchTab('audit')">📝</button>
+            <!-- ============================================================
+            КАРТОЧКА: ШТРАФЫ
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">📋</span> Выписать штраф</h3>
+                    <span class="count" id="finesCount">0</span>
+                </div>
+
+                <div class="form-group">
+                    <label>👤 Ник нарушителя (Roblox)</label>
+                    <input type="text" id="fineNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Статья нарушения</label>
+                    <select id="fineArticle" class="form-control">
+                        <option value="">-- Выберите статью --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Дополнительная причина</label>
+                    <input type="text" id="fineReason" class="form-control" placeholder="Или укажите причину вручную..." autocomplete="off">
+                </div>
+
+                <button class="btn btn-primary btn-block" onclick="submitFine()">🚔 Выписать штраф</button>
+
+                <div class="mt-20">
+                    <div class="flex">
+                        <button class="btn btn-outline btn-sm" onclick="loadFines()">🔄 Обновить</button>
+                        <button class="btn btn-outline btn-sm" onclick="exportData('fines')">📥 Экспорт</button>
                     </div>
                 </div>
-            </div>
 
-            <div class="content-area" id="contentArea">
-                <div id="toast" class="toast"></div>
-
-                <!-- DESKTOP -->
-                <div class="section active" id="desktopSection">
-                    <div style="text-align:center;padding:6px 0;">
-                        <div class="badge-display" id="desktopBadge">CCPD#0000</div>
-                        <p style="font-size:12px;color:var(--text-secondary);" id="desktopRank">Ранг</p>
-                        <div class="shift-box">
-                            <div class="shift-dot off" id="shiftDot"></div>
-                            <span class="shift-text" id="shiftLabel">Не на смене</span>
-                            <button class="shift-btn" id="shiftBtn" onclick="toggleShift()">Начать</button>
+                <div class="mt-15">
+                    <div id="finesList">
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет штрафов</p>
                         </div>
-                        <div id="codeSelector" style="display:none;margin:6px 0;">
-                            <span style="font-size:10px;color:var(--text-secondary);">Код:</span>
-                            <button class="code-btn" onclick="setCode(1)">Code 1</button>
-                            <button class="code-btn" onclick="setCode(2)">Code 2</button>
-                            <button class="code-btn active" onclick="setCode(3)">Code 3</button>
-                            <button class="code-btn" onclick="setCode(4)">Code 4</button>
-                        </div>
-                        <div style="margin:8px 0;">
-                            <button class="panic-btn" onclick="panic()">🚨 ТРЕВОГА</button>
-                        </div>
-                        <div style="display:flex;gap:6px;justify-content:center;margin-top:6px;">
-                            <button class="btn btn-info btn-sm" onclick="openProfile()" style="width:auto;">👤 Профиль</button>
-                            <button class="btn btn-danger btn-sm" onclick="logout()" style="width:auto;">🚪 Выйти</button>
-                        </div>
-                    </div>
-                    <div class="card"><h3>📊 Сводка</h3><div id="desktopStats"></div></div>
-                    <div class="card" id="achievementsCard" style="display:none;"><h3>🏆 Достижения</h3><div id="achievementsList"></div></div>
-                    <div class="card"><h3>🏅 Доска почёта</h3><div id="leaderboardList"></div></div>
-                    <div class="desktop-grid">
-                        <div class="desktop-icon" onclick="switchTab('fines')"><div class="icon">📋</div><div class="label">Штраф</div></div>
-                        <div class="desktop-icon" onclick="switchTab('wanted')"><div class="icon">🚨</div><div class="label">Розыск</div></div>
-                        <div class="desktop-icon" onclick="switchTab('players')"><div class="icon">👤</div><div class="label">Игрок</div></div>
-                        <div class="desktop-icon" onclick="switchTab('vehicles')"><div class="icon">🚗</div><div class="label">Авто</div></div>
-                        <div class="desktop-icon" onclick="switchTab('warnings')"><div class="icon">⚠️</div><div class="label">Предупр.</div></div>
-                        <div class="desktop-icon" onclick="switchTab('warrants')"><div class="icon">📜</div><div class="label">Ордер</div></div>
-                    </div>
-                </div>
-
-                <!-- FINES -->
-                <div class="section" id="finesSection">
-                    <div class="card"><h2>📋 Выписать штраф</h2>
-                        <input type="text" id="fineNickname" placeholder="Roblox ник">
-                        <select id="fineArticle" onchange="onArticleSelect()"><option value="">Без статьи</option></select>
-                        <input type="text" id="fineTime" placeholder="14:32">
-                        <input type="text" id="fineReason" placeholder="Причина">
-                        <input type="text" id="fineIssuer" disabled placeholder="Ваш бейдж">
-                        <button class="btn btn-primary" onclick="addFine()">📋 Выписать</button>
-                    </div>
-                    <div class="card"><h3>Список</h3><input type="text" id="fineSearch" placeholder="Поиск..." oninput="loadFines()"><div id="finesList"></div></div>
-                </div>
-
-                <!-- WANTED -->
-                <div class="section" id="wantedSection">
-                    <div class="card"><h2>🚨 Объявить в розыск</h2>
-                        <input type="text" id="wantedNickname" placeholder="Roblox ник">
-                        <input type="number" id="wantedStars" value="1" min="0" max="5">
-                        <input type="text" id="wantedReason" placeholder="Причина">
-                        <input type="text" id="wantedIssuer" disabled placeholder="Ваш бейдж">
-                        <button class="btn btn-primary" onclick="addWanted()">🚨 Объявить</button>
-                    </div>
-                    <div class="card"><h3>Ориентировки</h3><div id="wantedList"></div></div>
-                </div>
-
-                <!-- PLAYERS -->
-                <div class="section" id="playersSection">
-                    <div class="card"><h2>👥 База игроков</h2><input type="text" id="playerSearch" placeholder="Ник, RP-имя..." oninput="loadPlayers()"><div id="playersList"></div></div>
-                </div>
-
-                <!-- WARNINGS -->
-                <div class="section" id="warningsSection">
-                    <div class="card"><h2>⚠️ Предупреждение</h2>
-                        <input type="text" id="warnNickname" placeholder="Roblox ник">
-                        <select id="warnType"><option value="verbal">🗣 Устное</option><option value="written">📝 Письменное</option></select>
-                        <input type="text" id="warnReason" placeholder="Причина">
-                        <input type="text" id="warnIssuer" disabled placeholder="Ваш бейдж">
-                        <button class="btn btn-warn" onclick="addWarning()">⚠️ Вынести</button>
-                    </div>
-                    <div class="card"><h3>Список</h3><div id="warningsList"></div></div>
-                </div>
-
-                <!-- WARRANTS -->
-                <div class="section" id="warrantsSection">
-                    <div class="card"><h2>📜 Выписать ордер</h2>
-                        <input type="text" id="warrantNickname" placeholder="Roblox ник">
-                        <select id="warrantType"><option value="search">🔍 Обыск</option><option value="arrest">🔒 Арест</option></select>
-                        <input type="text" id="warrantReason" placeholder="Причина">
-                        <input type="text" id="warrantIssuer" disabled placeholder="Ваш бейдж">
-                        <button class="btn btn-primary" onclick="addWarrant()">📜 Выписать</button>
-                    </div>
-                    <div class="card"><h3>Активные ордера</h3><div id="warrantsList"></div></div>
-                </div>
-
-                <!-- VEHICLES -->
-                <div class="section" id="vehiclesSection">
-                    <div class="card"><h2>🚗 Поиск по госномеру</h2>
-                        <input type="text" id="plateSearch" placeholder="Введите госномер...">
-                        <button class="btn btn-primary" onclick="searchPlate()">🔍 Пробить</button>
-                        <div id="plateResult"></div>
-                    </div>
-                    <div class="card"><h2>Добавить ТС</h2>
-                        <input type="text" id="vehPlate" placeholder="Госномер *">
-                        <input type="text" id="vehModel" placeholder="Модель">
-                        <input type="text" id="vehColor" placeholder="Цвет">
-                        <input type="text" id="vehOwner" placeholder="Владелец (ник)">
-                        <button class="btn btn-primary" onclick="addVehicle()">🚗 Добавить</button>
-                    </div>
-                    <div class="card"><h3>База ТС</h3><input type="text" id="vehSearch" placeholder="Поиск..." oninput="loadVehicles()"><div id="vehiclesList"></div></div>
-                </div>
-
-                <!-- ARTICLES -->
-                <div class="section" id="articlesSection">
-                    <div class="card"><h2>📖 Кодекс</h2><input type="text" id="articleSearch" placeholder="Поиск..." oninput="loadArticles()"><div id="articlesList"></div></div>
-                </div>
-
-                <!-- ANALYTICS -->
-                <div class="section" id="analyticsSection">
-                    <div class="card"><h2>📊 Аналитика</h2><div id="analyticsContent"></div></div>
-                </div>
-
-                <!-- AUDIT -->
-                <div class="section" id="auditSection">
-                    <div class="card"><h2>📝 Аудит</h2>
-                        <select id="auditTypeFilter" onchange="loadAudit()"><option value="">Все</option><option value="fine_add">Штрафы</option><option value="wanted_add">Розыски</option><option value="warning_add">Предупреждения</option><option value="warrant_add">Ордера</option><option value="panic">Тревоги</option><option value="detention">Задержания</option></select>
-                        <input type="number" id="auditLimit" value="50" onchange="loadAudit()">
-                        <div id="auditList"></div>
                     </div>
                 </div>
             </div>
+
+            <!-- ============================================================
+            КАРТОЧКА: РОЗЫСК
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">🚨</span> Объявить в розыск</h3>
+                    <span class="count" id="wantedCount">0</span>
+                </div>
+
+                <div class="form-group">
+                    <label>👤 Ник разыскиваемого</label>
+                    <input type="text" id="wantedNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Причина</label>
+                    <input type="text" id="wantedReason" class="form-control" placeholder="Причина розыска..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>⚠️ Уровень опасности</label>
+                    <select id="wantedStars" class="form-control">
+                        <option value="1">⭐ Низкая</option>
+                        <option value="2">⭐⭐ Средняя</option>
+                        <option value="3">⭐⭐⭐ Высокая</option>
+                        <option value="4">⭐⭐⭐⭐ Очень высокая</option>
+                        <option value="5">⭐⭐⭐⭐⭐ КРИТИЧЕСКАЯ</option>
+                    </select>
+                </div>
+
+                <button class="btn btn-danger btn-block" onclick="submitWanted()">🚨 Объявить в розыск</button>
+
+                <div class="mt-20">
+                    <div class="flex">
+                        <button class="btn btn-outline btn-sm" onclick="loadWanted()">🔄 Обновить</button>
+                        <button class="btn btn-outline btn-sm" onclick="exportData('wanted')">📥 Экспорт</button>
+                    </div>
+                </div>
+
+                <div class="mt-15">
+                    <div id="wantedList">
+                        <div class="empty-state">
+                            <span class="icon">🔍</span>
+                            <p>Нет активных розысков</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        GRID: ПРЕДУПРЕЖДЕНИЯ + ОРДЕРА + ТРАНСПОРТ
+        ============================================================ -->
+        <div class="grid-3" style="margin-top: 20px;">
+
+            <!-- ============================================================
+            КАРТОЧКА: ПРЕДУПРЕЖДЕНИЯ
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">⚠️</span> Предупреждения</h3>
+                    <span class="count" id="warningsCount">0</span>
+                </div>
+
+                <div class="form-group">
+                    <label>👤 Ник игрока</label>
+                    <input type="text" id="warningNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Причина</label>
+                    <input type="text" id="warningReason" class="form-control" placeholder="Причина предупреждения..." autocomplete="off">
+                </div>
+
+                <button class="btn btn-warning btn-block" onclick="submitWarning()">⚠️ Выдать предупреждение</button>
+
+                <div class="mt-15">
+                    <div id="warningsList">
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет предупреждений</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            КАРТОЧКА: ОРДЕРА
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">📝</span> Ордера</h3>
+                    <span class="count" id="warrantsCount">0</span>
+                </div>
+
+                <div class="form-group">
+                    <label>👤 Ник игрока</label>
+                    <input type="text" id="warrantNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Тип ордера</label>
+                    <select id="warrantType" class="form-control">
+                        <option value="search">🔍 Обыск</option>
+                        <option value="arrest">🔗 Арест</option>
+                        <option value="investigation">📋 Расследование</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>📝 Причина</label>
+                    <input type="text" id="warrantReason" class="form-control" placeholder="Причина ордера..." autocomplete="off">
+                </div>
+
+                <button class="btn btn-purple btn-block" onclick="submitWarrant()">📝 Выдать ордер</button>
+
+                <div class="mt-15">
+                    <div id="warrantsList">
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет активных ордеров</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ============================================================
+            КАРТОЧКА: ТРАНСПОРТ
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">🚗</span> Транспорт</h3>
+                    <span class="count" id="vehiclesCount">0</span>
+                </div>
+
+                <div class="form-group">
+                    <label>🚗 Госномер</label>
+                    <input type="text" id="vehiclePlate" class="form-control" placeholder="A123BC" autocomplete="off" style="text-transform: uppercase;">
+                </div>
+
+                <div class="form-group">
+                    <label>📋 Модель</label>
+                    <input type="text" id="vehicleModel" class="form-control" placeholder="Модель авто..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>👤 Владелец (ник)</label>
+                    <input type="text" id="vehicleOwner" class="form-control" placeholder="Ник владельца..." autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>🎨 Цвет</label>
+                    <input type="text" id="vehicleColor" class="form-control" placeholder="Цвет..." autocomplete="off">
+                </div>
+
+                <button class="btn btn-success btn-block" onclick="submitVehicle()">🚗 Зарегистрировать ТС</button>
+
+                <div class="mt-15">
+                    <div class="flex">
+                        <button class="btn btn-outline btn-sm" onclick="loadVehicles()">🔄 Обновить</button>
+                        <button class="btn btn-outline btn-sm" onclick="exportData('vehicles')">📥 Экспорт</button>
+                    </div>
+                </div>
+
+                <div class="mt-15">
+                    <div id="vehiclesList">
+                        <div class="empty-state">
+                            <span class="icon">🚗</span>
+                            <p>Нет транспорта</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        НИЖНЯЯ СТРОКА: ТРЕВОГА + АНАЛИТИКА
+        ============================================================ -->
+        <div class="grid" style="margin-top: 20px;">
+
+            <!-- ============================================================
+            КАРТОЧКА: ТРЕВОГА
+            ============================================================ -->
+            <div class="card" style="border-color: #c62828;">
+                <div class="card-header">
+                    <h3 style="color: #f44336;"><span class="icon">🚨</span> Тревожная кнопка</h3>
+                </div>
+
+                <div class="form-group">
+                    <label>📍 Локация</label>
+                    <input type="text" id="panicLocation" class="form-control" placeholder="Укажите место..." autocomplete="off">
+                </div>
+
+                <button class="btn btn-danger btn-block" onclick="submitPanic()" style="font-size: 20px; padding: 15px;">
+                    🚨 ТРЕВОГА!
+                </button>
+
+                <div class="mt-15 text-muted text-center" style="font-size: 12px;">
+                    Отправит экстренный вызов всем офицерам
+                </div>
+            </div>
+
+            <!-- ============================================================
+            КАРТОЧКА: АНАЛИТИКА
+            ============================================================ -->
+            <div class="card">
+                <div class="card-header">
+                    <h3><span class="icon">📊</span> Аналитика</h3>
+                    <button class="btn btn-outline btn-xs" onclick="loadAnalytics()">🔄</button>
+                </div>
+
+                <div id="analyticsContent">
+                    <div class="empty-state">
+                        <span class="icon">📊</span>
+                        <p>Загрузка...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================
+        FOOTER
+        ============================================================ -->
+        <div class="text-center text-muted" style="margin-top: 30px; padding: 20px; font-size: 12px; border-top: 1px solid #1a3a5a;">
+            CCSV3 POLICE — Планшет v4.0 &bull; Данные обновляются автоматически
         </div>
     </div>
-</div>
 
-<div class="modal-overlay" id="playerModal" style="display:none" onclick="if(event.target===this)closeModal()"><div class="modal" id="playerModalContent"></div></div>
+    <!-- ============================================================
+    JAVASCRIPT
+    ============================================================ -->
+    <script>
+        // ============================================================
+        // ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ
+        // ============================================================
+        let currentOfficer = {
+            badge: 'CCPD#0000',
+            rank: 'Кадет',
+            rp_name: 'Офицер'
+        };
 
-<script>
-    var API = 'https://dsbot-ysfs.onrender.com/api';
-    var currentModerator = null;
-    var loginAttempts = 0, loginLocked = false, currentShift = null, currentCode = 4;
+        let isOnShift = false;
 
-    function updateClock() { var el = document.getElementById('liveTime'); if (el) el.textContent = new Date().toLocaleTimeString('ru-RU', {hour:'2-digit',minute:'2-digit'}); }
-    setInterval(updateClock, 1000); updateClock();
-    function toggleTheme() { document.documentElement.classList.toggle('light'); localStorage.setItem('theme', document.documentElement.classList.contains('light') ? 'light' : 'dark'); }
-    if (localStorage.getItem('theme') === 'light') document.documentElement.classList.add('light');
-    function toast(text, type) { var t = document.getElementById('toast'); t.textContent = text; t.className = 'toast ' + type + ' show'; setTimeout(function(){ t.className = 'toast'; }, 3000); }
-    function showLoginError(msg) { var e = document.getElementById('loginError'); e.textContent = '❌ ' + msg; e.classList.add('show'); setTimeout(function(){ e.classList.remove('show'); }, 3000); }
-    function checkShift() { return !!currentShift; }
-    function getIssuer() { return currentModerator ? currentModerator.badge : 'CCPD#0000'; }
+        // ============================================================
+        // TOAST УВЕДОМЛЕНИЯ
+        // ============================================================
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.textContent = message;
+            container.appendChild(toast);
 
-    function login() {
-        if (loginLocked) { showLoginError('Подождите 30 секунд'); return; }
-        var u = document.getElementById('loginInput').value.trim(), p = document.getElementById('passwordInput').value;
-        if (!u || !p) { showLoginError('Введите логин и пароль'); return; }
-        document.getElementById('loginSpinner').classList.add('show'); document.getElementById('loginBtn').disabled = true;
-        fetch(API + '/auth', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({username:u, password:p})})
-        .then(function(r){ return r.json(); }).then(function(data){
-            document.getElementById('loginSpinner').classList.remove('show'); document.getElementById('loginBtn').disabled = false;
-            if (data.success) {
-                loginAttempts = 0; currentModerator = data.moderator;
-                document.getElementById('loginScreen').style.display = 'none'; document.getElementById('mainApp').style.display = 'flex';
-                document.getElementById('statusBar').innerHTML = '<span class="time" id="liveTime">12:00</span><span>👮 ' + currentModerator.rp_name + ' (' + currentModerator.badge + ')</span>';
-                updateClock();
-                document.getElementById('fineIssuer').value = currentModerator.badge;
-                document.getElementById('wantedIssuer').value = currentModerator.badge;
-                document.getElementById('warnIssuer').value = currentModerator.badge;
-                document.getElementById('warrantIssuer').value = currentModerator.badge;
-                document.getElementById('desktopBadge').textContent = currentModerator.badge;
-                document.getElementById('desktopRank').textContent = currentModerator.rank_name;
-                loadAll(); toast('✅ Добро пожаловать!', 'success');
-            } else {
-                loginAttempts++; document.getElementById('passwordInput').value = '';
-                if (loginAttempts >= 5) { loginLocked = true; showLoginError('Заблокировано'); document.getElementById('loginBtn').disabled = true; setTimeout(function(){ loginLocked = false; loginAttempts = 0; document.getElementById('loginBtn').disabled = false; }, 30000); }
-                else { showLoginError('Неверно. Попыток: ' + (5 - loginAttempts)); }
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                toast.style.transition = 'all 0.3s ease';
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА СТАТИСТИКИ
+        // ============================================================
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                if (!response.ok) throw new Error('Ошибка загрузки статистики');
+                const stats = await response.json();
+
+                document.getElementById('statFines').textContent = stats.total_fines || 0;
+                document.getElementById('statWanted').textContent = stats.total_wanted || 0;
+                document.getElementById('statPlayers').textContent = stats.total_players || 0;
+
+                document.getElementById('finesCount').textContent = stats.total_fines || 0;
+                document.getElementById('wantedCount').textContent = stats.total_wanted || 0;
+                document.getElementById('warningsCount').textContent = stats.total_warnings || 0;
+                document.getElementById('warrantsCount').textContent = stats.total_warrants || 0;
+                document.getElementById('vehiclesCount').textContent = stats.total_vehicles || 0;
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
             }
-        }).catch(function(){ document.getElementById('loginSpinner').classList.remove('show'); document.getElementById('loginBtn').disabled = false; showLoginError('Ошибка соединения'); });
-    }
-
-    document.addEventListener('keydown', function(e) { if (e.key === 'Enter' && document.getElementById('loginScreen').style.display !== 'none') login(); });
-
-    var touchStartX = 0;
-    document.getElementById('contentArea').addEventListener('touchstart', function(e) { touchStartX = e.touches[0].clientX; });
-    document.getElementById('contentArea').addEventListener('touchend', function(e) {
-        var diff = touchStartX - e.changedTouches[0].clientX; if (Math.abs(diff) < 60) return;
-        var tabs = ['desktop','fines','wanted','players','warnings','warrants','vehicles','articles','analytics','audit'];
-        var current = ''; document.querySelectorAll('.section.active').forEach(function(s) { current = s.id.replace('Section',''); });
-        var idx = tabs.indexOf(current);
-        if (diff > 0 && idx < tabs.length - 1) switchTab(tabs[idx + 1]);
-        if (diff < 0 && idx > 0) switchTab(tabs[idx - 1]);
-    });
-
-    function switchTab(tab) {
-        if (!checkShift() && ['fines','wanted','warnings','warrants'].indexOf(tab) !== -1) { toast('🔒 Начните смену!', 'error'); return; }
-        document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
-        document.querySelectorAll('.section').forEach(function(s){ s.classList.remove('active'); });
-        var tabs = document.querySelectorAll('.tab');
-        for (var i = 0; i < tabs.length; i++) {
-            if ((tabs[i].getAttribute('onclick')||'').indexOf("'" + tab + "'") !== -1) { tabs[i].classList.add('active'); break; }
         }
-        var sec = document.getElementById(tab + 'Section'); if (sec) sec.classList.add('active');
-        if (tab === 'desktop') { document.getElementById('desktopBadge').textContent = currentModerator ? currentModerator.badge : 'CCPD#0000'; document.getElementById('desktopRank').textContent = currentModerator ? currentModerator.rank_name : 'Ранг'; loadDesktopStats(); loadAchievements(); loadLeaderboard(); }
-        if (tab === 'fines') loadFines(); if (tab === 'wanted') loadWanted(); if (tab === 'players') loadPlayers();
-        if (tab === 'warnings') loadWarnings(); if (tab === 'warrants') loadWarrants(); if (tab === 'vehicles') loadVehicles();
-        if (tab === 'articles') loadArticles(); if (tab === 'analytics') loadAnalytics(); if (tab === 'audit') loadAudit();
-    }
 
-    function loadAll() { loadStats(); loadFines(); loadPlayers(); loadDesktopStats(); loadAchievements(); loadLeaderboard(); loadArticlesIntoSelect(); }
-    function loadStats() { fetch(API + '/stats').then(function(r){ return r.json(); }).then(function(s) { var el = document.getElementById('statusRight'); if (el) el.textContent = '📋' + s.total_fines + ' 🚨' + s.total_wanted + ' 👥' + s.total_players; }); }
-    function loadDesktopStats() { fetch(API + '/stats').then(function(r){ return r.json(); }).then(function(s) { document.getElementById('desktopStats').innerHTML = '<div class="quick-stat"><span>📋</span><div><strong>' + s.total_fines + '</strong><div style="font-size:9px;color:var(--text-secondary);">Штрафов</div></div></div><div class="quick-stat"><span>🚨</span><div><strong>' + s.total_wanted + '</strong><div style="font-size:9px;color:var(--text-secondary);">В розыске</div></div></div><div class="quick-stat"><span>👥</span><div><strong>' + s.total_players + '</strong><div style="font-size:9px;color:var(--text-secondary);">В базе</div></div></div><div class="quick-stat"><span>🟢</span><div><strong>' + (s.officers_on_duty||0) + '</strong><div style="font-size:9px;color:var(--text-secondary);">На смене</div></div></div>'; }); }
-    function loadAchievements() { if(!currentModerator) return; fetch(API + '/achievements/' + encodeURIComponent(currentModerator.badge)).then(function(r){ return r.json(); }).then(function(data) { if (data.achievements && data.achievements.length) { document.getElementById('achievementsCard').style.display = 'block'; document.getElementById('achievementsList').innerHTML = data.achievements.map(function(a) { return '<span class="achieve-badge">' + a + '</span>'; }).join(''); } }); }
-    function loadLeaderboard() { fetch(API + '/leaderboard').then(function(r){ return r.json(); }).then(function(board) { var html = ''; board.forEach(function(o,i) { html += '<div class="quick-stat"><span>' + ['🥇','🥈','🥉','4','5'][i] + '</span><div><strong>' + o.badge + '</strong><div style="font-size:9px;color:var(--text-secondary);">Штрафов: ' + o.fines + ' | Розысков: ' + o.wanted + '</div></div></div>'; }); document.getElementById('leaderboardList').innerHTML = html || '<p style="color:#888;">Нет данных</p>'; }); }
+        // ============================================================
+        // ЗАГРУЗКА СТАТЕЙ
+        // ============================================================
+        async function loadArticles() {
+            try {
+                const response = await fetch('/api/articles');
+                if (!response.ok) throw new Error('Ошибка загрузки статей');
+                const articles = await response.json();
 
-    function toggleShift() {
-        if (currentShift) {
-            fetch(API + '/shifts/' + currentShift.id + '/end', {method:'POST'}).then(function(){ currentShift = null; updateShiftUI(false); toast('Смена завершена', 'success'); loadDesktopStats(); });
-        } else {
-            fetch(API + '/shifts/start', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({officer: getIssuer(), code: currentCode})})
-            .then(function(r){ return r.json(); }).then(function(res) { if (res.success) { currentShift = res.shift; updateShiftUI(true); toast('Смена начата!', 'success'); loadDesktopStats(); } });
+                const select = document.getElementById('fineArticle');
+                if (!select) return;
+
+                select.innerHTML = '<option value="">-- Выберите статью --</option>';
+
+                articles.forEach(article => {
+                    const option = document.createElement('option');
+                    option.value = article.id;
+                    option.textContent = `${article.id} — ${article.title} (${article.fine}$)`;
+                    select.appendChild(option);
+                });
+
+                console.log('✅ Статьи загружены:', articles.length);
+            } catch (error) {
+                console.error('❌ Ошибка загрузки статей:', error);
+                document.getElementById('fineArticle').innerHTML = '<option value="">Ошибка загрузки</option>';
+            }
         }
-    }
-    function updateShiftUI(on) {
-        document.getElementById('shiftDot').className = 'shift-dot' + (on ? ' on' : ' off');
-        document.getElementById('shiftLabel').textContent = on ? 'На смене' : 'Не на смене';
-        document.getElementById('shiftBtn').textContent = on ? 'Завершить' : 'Начать';
-        document.getElementById('shiftBtn').className = 'shift-btn' + (on ? ' end' : '');
-        document.getElementById('codeSelector').style.display = on ? 'block' : 'none';
-    }
-    function setCode(code) { currentCode = code; document.querySelectorAll('.code-btn').forEach(function(b){ b.classList.remove('active'); }); event.target.classList.add('active'); }
-    function panic() {
-        if (!currentShift) { toast('🔒 Начните смену!', 'error'); return; }
-        var loc = prompt('📍 Ваше местоположение (перекрёсток, район):', 'Не указано');
-        fetch(API + '/panic', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({officer: getIssuer(), location: loc || 'Не указано'})})
-        .then(function(r){ return r.json(); }).then(function(res) { if (res.success) toast('🚨 Тревога отправлена!', 'error'); });
-    }
 
-    function logout() { if (!confirm('Выйти?')) return; currentModerator = null; currentShift = null; document.getElementById('loginScreen').style.display = 'flex'; document.getElementById('mainApp').style.display = 'none'; toast('👋 Вы вышли', 'success'); }
-    function openProfile() {
-        if (!currentModerator) return;
-        fetch(API + '/achievements/' + encodeURIComponent(currentModerator.badge)).then(function(r){ return r.json(); }).then(function(data) {
-            var html = '<button onclick="closeModal()" style="float:right;background:none;border:none;color:var(--text);font-size:18px;">✕</button>';
-            html += '<div style="text-align:center;"><div style="font-size:48px;">👮</div><h2>' + currentModerator.rp_name + '</h2><div class="badge-display">' + currentModerator.badge + '</div><p style="color:var(--text-secondary);">' + currentModerator.rank_name + '</p></div>';
-            html += '<div class="card"><h3>📊 Статистика</h3>';
-            html += '<div class="quick-stat"><span>📋</span><div><strong>' + (data.fines||0) + '</strong><div style="font-size:9px;">Штрафов</div></div></div>';
-            html += '<div class="quick-stat"><span>🚨</span><div><strong>' + (data.wanted||0) + '</strong><div style="font-size:9px;">Розысков</div></div></div>';
-            html += '<div class="quick-stat"><span>🧹</span><div><strong>' + (data.clears||0) + '</strong><div style="font-size:9px;">Очищено</div></div></div></div>';
-            document.getElementById('playerModalContent').innerHTML = html; document.getElementById('playerModal').style.display = 'flex';
+        // ============================================================
+        // ЗАГРУЗКА ШТРАФОВ
+        // ============================================================
+        async function loadFines() {
+            try {
+                const response = await fetch('/api/fines');
+                if (!response.ok) throw new Error('Ошибка загрузки штрафов');
+                const fines = await response.json();
+
+                const container = document.getElementById('finesList');
+                if (!fines || fines.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет штрафов</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="table-wrap"><table class="table">
+                    <thead><tr>
+                        <th>ID</th>
+                        <th>Ник</th>
+                        <th>Причина</th>
+                        <th>Сумма</th>
+                        <th>Действия</th>
+                    </tr></thead><tbody>`;
+
+                fines.slice(-10).reverse().forEach(f => {
+                    const reason = f.reason || f.article || '—';
+                    const amount = f.amount || 0;
+                    html += `<tr>
+                        <td>#${f.id}</td>
+                        <td><strong>${f.nickname}</strong></td>
+                        <td style="font-size:12px; max-width:150px; word-break:break-word;">${reason}</td>
+                        <td>${amount}$</td>
+                        <td>
+                            <button class="btn btn-danger btn-xs" onclick="deleteFine(${f.id})">✕</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка загрузки штрафов:', error);
+                document.getElementById('finesList').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА РОЗЫСКОВ
+        // ============================================================
+        async function loadWanted() {
+            try {
+                const response = await fetch('/api/wanted');
+                if (!response.ok) throw new Error('Ошибка загрузки розысков');
+                const wanted = await response.json();
+
+                const container = document.getElementById('wantedList');
+                if (!wanted || wanted.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">🔍</span>
+                            <p>Нет активных розысков</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="table-wrap"><table class="table">
+                    <thead><tr>
+                        <th>ID</th>
+                        <th>Ник</th>
+                        <th>Причина</th>
+                        <th>⭐</th>
+                        <th>Действия</th>
+                    </tr></thead><tbody>`;
+
+                wanted.slice(-10).reverse().forEach(w => {
+                    const stars = '⭐'.repeat(w.stars || 1);
+                    const starsColor = w.stars >= 4 ? 'color: #f44336;' : 'color: #ffd54f;';
+                    html += `<tr>
+                        <td>#${w.id}</td>
+                        <td><strong>${w.nickname}</strong></td>
+                        <td style="font-size:12px; max-width:150px; word-break:break-word;">${w.reason || '—'}</td>
+                        <td class="stars" style="${starsColor}">${stars}</td>
+                        <td>
+                            <button class="btn btn-success btn-xs" onclick="deleteWanted(${w.id})">✅ Снять</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка загрузки розысков:', error);
+                document.getElementById('wantedList').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА ПРЕДУПРЕЖДЕНИЙ
+        // ============================================================
+        async function loadWarnings() {
+            try {
+                const response = await fetch('/api/warnings');
+                if (!response.ok) throw new Error('Ошибка загрузки предупреждений');
+                const warnings = await response.json();
+
+                const container = document.getElementById('warningsList');
+                if (!warnings || warnings.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет предупреждений</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="table-wrap"><table class="table">
+                    <thead><tr>
+                        <th>Ник</th>
+                        <th>Причина</th>
+                        <th>Действия</th>
+                    </tr></thead><tbody>`;
+
+                warnings.slice(-10).reverse().forEach(w => {
+                    html += `<tr>
+                        <td><strong>${w.nickname}</strong></td>
+                        <td style="font-size:12px; max-width:150px; word-break:break-word;">${w.reason || '—'}</td>
+                        <td>
+                            <button class="btn btn-danger btn-xs" onclick="deleteWarning(${w.id})">✕</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка загрузки предупреждений:', error);
+                document.getElementById('warningsList').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА ОРДЕРОВ
+        // ============================================================
+        async function loadWarrants() {
+            try {
+                const response = await fetch('/api/warrants');
+                if (!response.ok) throw new Error('Ошибка загрузки ордеров');
+                const warrants = await response.json();
+
+                const container = document.getElementById('warrantsList');
+                if (!warrants || warrants.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">📭</span>
+                            <p>Нет активных ордеров</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="table-wrap"><table class="table">
+                    <thead><tr>
+                        <th>Ник</th>
+                        <th>Тип</th>
+                        <th>Причина</th>
+                        <th>Действия</th>
+                    </tr></thead><tbody>`;
+
+                const typeMap = {
+                    'search': '🔍 Обыск',
+                    'arrest': '🔗 Арест',
+                    'investigation': '📋 Расследование'
+                };
+
+                warrants.slice(-10).reverse().forEach(w => {
+                    html += `<tr>
+                        <td><strong>${w.nickname}</strong></td>
+                        <td>${typeMap[w.type] || w.type}</td>
+                        <td style="font-size:12px; max-width:150px; word-break:break-word;">${w.reason || '—'}</td>
+                        <td>
+                            <button class="btn btn-success btn-xs" onclick="deleteWarrant(${w.id})">✅ Отозвать</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка загрузки ордеров:', error);
+                document.getElementById('warrantsList').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА ТРАНСПОРТА
+        // ============================================================
+        async function loadVehicles() {
+            try {
+                const response = await fetch('/api/vehicles');
+                if (!response.ok) throw new Error('Ошибка загрузки транспорта');
+                const vehicles = await response.json();
+
+                const container = document.getElementById('vehiclesList');
+                if (!vehicles || vehicles.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span class="icon">🚗</span>
+                            <p>Нет транспорта</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = `<div class="table-wrap"><table class="table">
+                    <thead><tr>
+                        <th>Госномер</th>
+                        <th>Модель</th>
+                        <th>Владелец</th>
+                        <th>Действия</th>
+                    </tr></thead><tbody>`;
+
+                vehicles.slice(-10).reverse().forEach(v => {
+                    html += `<tr>
+                        <td><strong>${v.plate}</strong></td>
+                        <td>${v.model || '—'}</td>
+                        <td>${v.owner_nickname || '—'}</td>
+                        <td>
+                            <button class="btn btn-danger btn-xs" onclick="deleteVehicle('${v.plate}')">✕</button>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            } catch (error) {
+                console.error('Ошибка загрузки транспорта:', error);
+                document.getElementById('vehiclesList').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ЗАГРУЗКА АНАЛИТИКИ
+        // ============================================================
+        async function loadAnalytics() {
+            try {
+                const response = await fetch('/api/analytics');
+                if (!response.ok) throw new Error('Ошибка загрузки аналитики');
+                const data = await response.json();
+
+                const container = document.getElementById('analyticsContent');
+
+                let html = '';
+
+                // Топ нарушителей
+                if (data.top_offenders && data.top_offenders.length > 0) {
+                    html += `<div style="margin-bottom:12px;">
+                        <div style="color:#8ab4d6; font-size:13px; margin-bottom:4px;">🏆 Топ нарушителей:</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+                    data.top_offenders.slice(0, 5).forEach(o => {
+                        html +=
+                            `<span class="status-badge info">${o.nickname}: ${o.count} штрафов</span>`;
+                    });
+                    html += `</div></div>`;
+                }
+
+                // Топ офицеров
+                if (data.top_officers && data.top_officers.length > 0) {
+                    html += `<div style="margin-bottom:12px;">
+                        <div style="color:#8ab4d6; font-size:13px; margin-bottom:4px;">👮 Топ офицеров:</div>
+                        <div style="display:flex; flex-wrap:wrap; gap:6px;">`;
+                    data.top_officers.slice(0, 5).forEach(o => {
+                        html +=
+                            `<span class="status-badge active">${o.name}: ${o.count} штрафов</span>`;
+                    });
+                    html += `</div></div>`;
+                }
+
+                // Итоги
+                if (data.summary) {
+                    html += `<div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; font-size:13px;">
+                        <span>📋 <strong>${data.summary.total_fines}</strong> штрафов</span>
+                        <span>🚨 <strong>${data.summary.total_wanted}</strong> розысков</span>
+                        <span>👤 <strong>${data.summary.total_players}</strong> игроков</span>
+                    </div>`;
+                }
+
+                container.innerHTML = html || `
+                    <div class="empty-state">
+                        <span class="icon">📊</span>
+                        <p>Нет данных для аналитики</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Ошибка загрузки аналитики:', error);
+                document.getElementById('analyticsContent').innerHTML = `
+                    <div class="empty-state">
+                        <span class="icon">❌</span>
+                        <p>Ошибка загрузки</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА ШТРАФА
+        // ============================================================
+        async function submitFine() {
+            const nickname = document.getElementById('fineNickname').value.trim();
+            const article = document.getElementById('fineArticle').value;
+            const reason = document.getElementById('fineReason').value.trim();
+
+            if (!nickname) {
+                showToast('❌ Введите ник нарушителя!', 'error');
+                return;
+            }
+
+            if (!article && !reason) {
+                showToast('❌ Выберите статью или укажите причину!', 'error');
+                return;
+            }
+
+            let finalReason = reason;
+            if (article) {
+                const select = document.getElementById('fineArticle');
+                const articleText = select.options[select.selectedIndex].textContent;
+                finalReason = articleText + (reason ? ` (${reason})` : '');
+            }
+
+            const data = {
+                nickname: nickname,
+                reason: finalReason,
+                article: article || '',
+                issued_by: currentOfficer.badge || 'CCPD#0000',
+                time: new Date().toLocaleTimeString()
+            };
+
+            try {
+                const response = await fetch('/api/fines', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`✅ Штраф выписан! ${nickname} → ${result.fine.amount || 500}$`, 'success');
+                    document.getElementById('fineNickname').value = '';
+                    document.getElementById('fineArticle').value = '';
+                    document.getElementById('fineReason').value = '';
+                    loadFines();
+                    loadStats();
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА РОЗЫСКА
+        // ============================================================
+        async function submitWanted() {
+            const nickname = document.getElementById('wantedNickname').value.trim();
+            const reason = document.getElementById('wantedReason').value.trim();
+            const stars = parseInt(document.getElementById('wantedStars').value);
+
+            if (!nickname || !reason) {
+                showToast('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            const data = {
+                nickname: nickname,
+                reason: reason,
+                stars: stars,
+                issued_by: currentOfficer.badge || 'CCPD#0000'
+            };
+
+            try {
+                const response = await fetch('/api/wanted', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`✅ Розыск объявлен! ${nickname} — ${'⭐'.repeat(stars)}`, 'success');
+                    document.getElementById('wantedNickname').value = '';
+                    document.getElementById('wantedReason').value = '';
+                    loadWanted();
+                    loadStats();
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА ПРЕДУПРЕЖДЕНИЯ
+        // ============================================================
+        async function submitWarning() {
+            const nickname = document.getElementById('warningNickname').value.trim();
+            const reason = document.getElementById('warningReason').value.trim();
+
+            if (!nickname || !reason) {
+                showToast('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            const data = {
+                nickname: nickname,
+                reason: reason,
+                issued_by: currentOfficer.badge || 'CCPD#0000'
+            };
+
+            try {
+                const response = await fetch('/api/warnings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`⚠️ Предупреждение выдано ${nickname}`, 'info');
+                    document.getElementById('warningNickname').value = '';
+                    document.getElementById('warningReason').value = '';
+                    if (result.auto_wanted) {
+                        showToast('⚠️ Игрок автоматически объявлен в розыск (3 предупреждения)!', 'warning');
+                    }
+                    loadWarnings();
+                    loadWanted();
+                    loadStats();
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА ОРДЕРА
+        // ============================================================
+        async function submitWarrant() {
+            const nickname = document.getElementById('warrantNickname').value.trim();
+            const type = document.getElementById('warrantType').value;
+            const reason = document.getElementById('warrantReason').value.trim();
+
+            if (!nickname || !reason) {
+                showToast('❌ Заполните все поля!', 'error');
+                return;
+            }
+
+            const data = {
+                nickname: nickname,
+                type: type,
+                reason: reason,
+                issued_by: currentOfficer.badge || 'CCPD#0000'
+            };
+
+            try {
+                const response = await fetch('/api/warrants', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`✅ Ордер выдан ${nickname}`, 'success');
+                    document.getElementById('warrantNickname').value = '';
+                    document.getElementById('warrantReason').value = '';
+                    loadWarrants();
+                    loadStats();
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА ТРАНСПОРТА
+        // ============================================================
+        async function submitVehicle() {
+            const plate = document.getElementById('vehiclePlate').value.trim().toUpperCase();
+            const model = document.getElementById('vehicleModel').value.trim();
+            const owner = document.getElementById('vehicleOwner').value.trim();
+            const color = document.getElementById('vehicleColor').value.trim();
+
+            if (!plate) {
+                showToast('❌ Введите госномер!', 'error');
+                return;
+            }
+
+            const data = {
+                plate: plate,
+                model: model,
+                owner_nickname: owner,
+                color: color
+            };
+
+            try {
+                const response = await fetch('/api/vehicles', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast(`🚗 ТС ${plate} зарегистрирован`, 'success');
+                    document.getElementById('vehiclePlate').value = '';
+                    document.getElementById('vehicleModel').value = '';
+                    document.getElementById('vehicleOwner').value = '';
+                    document.getElementById('vehicleColor').value = '';
+                    loadVehicles();
+                    loadStats();
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // ОТПРАВКА ТРЕВОГИ
+        // ============================================================
+        async function submitPanic() {
+            const location = document.getElementById('panicLocation').value.trim() || 'Не указано';
+
+            if (!confirm('🚨 Отправить сигнал тревоги всем офицерам?')) return;
+
+            const data = {
+                officer: currentOfficer.badge || 'CCPD#0000',
+                location: location
+            };
+
+            try {
+                const response = await fetch('/api/panic', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                if (result.success) {
+                    showToast('🚨 ТРЕВОГА ОТПРАВЛЕНА!', 'error');
+                    document.getElementById('panicLocation').value = '';
+                } else {
+                    showToast(`❌ Ошибка: ${result.error}`, 'error');
+                }
+            } catch (error) {
+                showToast('❌ Ошибка отправки!', 'error');
+                console.error(error);
+            }
+        }
+
+        // ============================================================
+        // УДАЛЕНИЕ
+        // ============================================================
+        async function deleteFine(id) {
+            if (!confirm(`Удалить штраф #${id}?`)) return;
+            try {
+                const response = await fetch(`/api/fines/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`✅ Штраф #${id} удалён`, 'success');
+                    loadFines();
+                    loadStats();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function deleteWanted(id) {
+            if (!confirm(`Снять розыск #${id}?`)) return;
+            try {
+                const response = await fetch(`/api/wanted/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`✅ Розыск #${id} снят`, 'success');
+                    loadWanted();
+                    loadStats();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function deleteWarning(id) {
+            if (!confirm(`Удалить предупреждение #${id}?`)) return;
+            try {
+                const response = await fetch(`/api/warnings/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`✅ Предупреждение удалено`, 'success');
+                    loadWarnings();
+                    loadStats();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function deleteWarrant(id) {
+            if (!confirm(`Отозвать ордер #${id}?`)) return;
+            try {
+                const response = await fetch(`/api/warrants/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`✅ Ордер отозван`, 'success');
+                    loadWarrants();
+                    loadStats();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        async function deleteVehicle(plate) {
+            if (!confirm(`Удалить ТС ${plate}?`)) return;
+            try {
+                const response = await fetch(`/api/vehicles/${plate}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showToast(`🚗 ТС ${plate} удалено`, 'success');
+                    loadVehicles();
+                    loadStats();
+                }
+            } catch (error) { console.error(error); }
+        }
+
+        // ============================================================
+        // ЭКСПОРТ
+        // ============================================================
+        function exportData(type) {
+            window.open(`/api/export/${type}`, '_blank');
+        }
+
+        // ============================================================
+        // СМЕНА
+        // ============================================================
+        function toggleShift() {
+            isOnShift = !isOnShift;
+            const btn = document.getElementById('shiftBtn');
+            const dot = document.getElementById('shiftDot');
+            const text = document.getElementById('shiftText');
+
+            if (isOnShift) {
+                btn.textContent = 'Закончить смену';
+                btn.classList.add('off');
+                dot.className = 'status-dot online';
+                text.textContent = 'На смене';
+                showToast('🚔 Смена начата!', 'success');
+            } else {
+                btn.textContent = 'Начать смену';
+                btn.classList.remove('off');
+                dot.className = 'status-dot offline';
+                text.textContent = 'Не на смене';
+                showToast('🛑 Смена завершена', 'info');
+            }
+        }
+
+        // ============================================================
+        // АВТОРИЗАЦИЯ
+        // ============================================================
+        async function checkAuth() {
+            // Попытка восстановить сессию
+            try {
+                const saved = localStorage.getItem('ccsv3_officer');
+                if (saved) {
+                    const officer = JSON.parse(saved);
+                    currentOfficer = officer;
+                    document.getElementById('officerBadge').textContent = officer.badge || 'CCPD#0000';
+                    document.getElementById('officerRank').textContent = officer.rank || 'Кадет';
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        // ============================================================
+        // ЗАПУСК
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚔 CCSV3 Police Планшет v4.0 загружен');
+
+            checkAuth();
+            loadArticles();
+            loadStats();
+            loadFines();
+            loadWanted();
+            loadWarnings();
+            loadWarrants();
+            loadVehicles();
+            loadAnalytics();
+
+            // Автообновление каждые 30 секунд
+            setInterval(() => {
+                loadStats();
+                loadFines();
+                loadWanted();
+                loadWarnings();
+                loadWarrants();
+                loadVehicles();
+            }, 30000);
+
+            // Enter для отправки форм
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const target = e.target;
+                    if (target.id === 'fineNickname' || target.id === 'fineReason') {
+                        submitFine();
+                    } else if (target.id === 'wantedNickname' || target.id === 'wantedReason') {
+                        submitWanted();
+                    } else if (target.id === 'warningNickname' || target.id === 'warningReason') {
+                        submitWarning();
+                    } else if (target.id === 'warrantNickname' || target.id === 'warrantReason') {
+                        submitWarrant();
+                    } else if (target.id === 'vehiclePlate' || target.id === 'vehicleModel' ||
+                        target.id === 'vehicleOwner' || target.id === 'vehicleColor') {
+                        submitVehicle();
+                    } else if (target.id === 'panicLocation') {
+                        submitPanic();
+                    }
+                }
+            });
         });
-    }
-    function closeModal() { document.getElementById('playerModal').style.display = 'none'; }
-
-    // FINES, WANTED, WARNINGS, WARRANTS, VEHICLES, PLAYERS — стандартные fetch-функции (как в v3.0, без изменений)
-    function addFine() { if (!checkShift()) { toast('🔒 Начните смену!', 'error'); return; } var n = document.getElementById('fineNickname').value.trim(), r = document.getElementById('fineReason').value.trim(); if (!n || !r) { toast('Заполните', 'error'); return; } fetch(API + '/fines', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nickname:n, reason:r, article:document.getElementById('fineArticle').value, time:document.getElementById('fineTime').value.trim()||undefined, issued_by:getIssuer()})}).then(function(r){ return r.json(); }).then(function(res) { if (res.success) { toast('✅ #' + res.fine.id, 'success'); document.getElementById('fineNickname').value = ''; document.getElementById('fineReason').value = ''; loadFines(); loadStats(); } }); }
-    function loadFines() { fetch(API + '/fines').then(function(r){ return r.json(); }).then(function(fines) { var html = ''; fines.reverse().forEach(function(f) { html += '<div class="list-item"><div><strong>#' + f.id + ' 👤 ' + f.nickname + '</strong><small>' + f.reason + ' | ' + f.time + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteFine(' + f.id + ')">🗑️</button></div>'; }); document.getElementById('finesList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function deleteFine(id) { if (!confirm('Снять?')) return; fetch(API + '/fines/' + id, {method:'DELETE'}).then(function(){ loadFines(); loadStats(); }); }
-    function addWanted() { if (!checkShift()) { toast('🔒 Начните смену!', 'error'); return; } var n = document.getElementById('wantedNickname').value.trim(), r = document.getElementById('wantedReason').value.trim(); if (!n || !r) { toast('Заполните', 'error'); return; } fetch(API + '/wanted', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nickname:n, reason:r, stars:parseInt(document.getElementById('wantedStars').value)||1, issued_by:getIssuer()})}).then(function(r){ return r.json(); }).then(function(res) { if (res.success) { toast('🚨 #' + res.wanted.id, 'success'); document.getElementById('wantedNickname').value = ''; document.getElementById('wantedReason').value = ''; loadWanted(); } }); }
-    function loadWanted() { fetch(API + '/wanted').then(function(r){ return r.json(); }).then(function(wanted) { var html = ''; wanted.reverse().forEach(function(w) { html += '<div class="list-item' + (w.stars>=4?' danger':'') + '"><div><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>' + w.reason + '</small><span>' + '⭐'.repeat(w.stars) + '</span></div><button class="btn btn-danger btn-sm" onclick="deleteWanted(' + w.id + ')">🔓</button></div>'; }); document.getElementById('wantedList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function deleteWanted(id) { if (!confirm('Снять?')) return; fetch(API + '/wanted/' + id, {method:'DELETE'}).then(function(){ loadWanted(); }); }
-    function addWarning() { if (!checkShift()) { toast('🔒 Начните смену!', 'error'); return; } var n = document.getElementById('warnNickname').value.trim(), r = document.getElementById('warnReason').value.trim(); if (!n || !r) { toast('Заполните', 'error'); return; } fetch(API + '/warnings', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nickname:n, reason:r, type:document.getElementById('warnType').value, issued_by:getIssuer()})}).then(function(r){ return r.json(); }).then(function(res) { if (res.success) { toast('⚠️ Вынесено', 'success'); loadWarnings(); } }); }
-    function loadWarnings() { fetch(API + '/warnings').then(function(r){ return r.json(); }).then(function(warnings) { var html = ''; warnings.reverse().forEach(function(w) { html += '<div class="list-item"><div><strong>#' + w.id + ' 👤 ' + w.nickname + '</strong><small>' + w.reason + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteWarning(' + w.id + ')">🗑️</button></div>'; }); document.getElementById('warningsList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function deleteWarning(id) { fetch(API + '/warnings/' + id, {method:'DELETE'}).then(function(){ loadWarnings(); }); }
-    function addWarrant() { if (!checkShift()) { toast('🔒 Начните смену!', 'error'); return; } var n = document.getElementById('warrantNickname').value.trim(), r = document.getElementById('warrantReason').value.trim(); if (!n || !r) { toast('Заполните', 'error'); return; } fetch(API + '/warrants', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({nickname:n, reason:r, type:document.getElementById('warrantType').value, issued_by:getIssuer()})}).then(function(r){ return r.json(); }).then(function(res) { if (res.success) { toast('📜 #' + res.warrant.id, 'success'); loadWarrants(); } }); }
-    function loadWarrants() { fetch(API + '/warrants').then(function(r){ return r.json(); }).then(function(warrants) { var html = ''; warrants.forEach(function(w) { html += '<div class="list-item"><div><strong>#' + w.id + ' 📜 ' + (w.type==='arrest'?'🔒 Арест':'🔍 Обыск') + ' — ' + w.nickname + '</strong><small>' + w.reason + '</small></div><button class="btn btn-danger btn-sm" onclick="revokeWarrant(' + w.id + ')">Отозвать</button></div>'; }); document.getElementById('warrantsList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function revokeWarrant(id) { fetch(API + '/warrants/' + id, {method:'DELETE'}).then(function(){ loadWarrants(); }); }
-    function addVehicle() { var plate = document.getElementById('vehPlate').value.trim().toUpperCase(); if (!plate) { toast('Введите госномер', 'error'); return; } fetch(API + '/vehicles', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({plate:plate, model:document.getElementById('vehModel').value.trim(), color:document.getElementById('vehColor').value.trim(), owner_nickname:document.getElementById('vehOwner').value.trim()})}).then(function(){ toast('🚗 Добавлено', 'success'); loadVehicles(); }); }
-    function loadVehicles() { fetch(API + '/vehicles').then(function(r){ return r.json(); }).then(function(vehicles) { var html = ''; vehicles.forEach(function(v) { html += '<div class="list-item"><div><strong>🚗 ' + v.plate + '</strong><small>' + (v.model||'—') + ' | ' + (v.color||'—') + ' | 👤 ' + (v.owner_nickname||'—') + '</small></div><button class="btn btn-danger btn-sm" onclick="deleteVehicle(\'' + v.plate + '\')">🗑️</button></div>'; }); document.getElementById('vehiclesList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function deleteVehicle(plate) { fetch(API + '/vehicles/' + encodeURIComponent(plate), {method:'DELETE'}).then(function(){ loadVehicles(); }); }
-    function searchPlate() { var plate = document.getElementById('plateSearch').value.trim().toUpperCase(); if (!plate) return; fetch(API + '/vehicle/check/' + encodeURIComponent(plate)).then(function(r){ return r.json(); }).then(function(data) { if (!data) { document.getElementById('plateResult').innerHTML = '<p style="color:#888;">ТС не найдено</p>'; return; } var html = '<div class="card"><h3>🚗 ' + data.vehicle.plate + '</h3><p>Модель: ' + (data.vehicle.model||'—') + ' | Цвет: ' + (data.vehicle.color||'—') + '</p>'; if (data.owner) { html += '<p>👤 Владелец: <strong>' + data.owner.nickname + '</strong> (' + (data.owner.player_rank||'гражданский') + ')</p>'; if (data.wanted.length) html += '<p style="color:var(--danger);">🚨 В РОЗЫСКЕ!</p>'; html += '<p>📋 Штрафов: ' + data.fines.length + '</p>'; } html += '</div>'; document.getElementById('plateResult').innerHTML = html; }); }
-    function loadPlayers() { var search = document.getElementById('playerSearch') ? document.getElementById('playerSearch').value : ''; fetch(API + '/players?search=' + encodeURIComponent(search)).then(function(r){ return r.json(); }).then(function(players) { var html = ''; players.forEach(function(p) { html += '<div class="player-card" onclick="openPlayerProfile(\'' + p.nickname + '\')"><img class="avatar" src="' + (p.photo_url||'') + '"><div><strong>👤 ' + p.nickname + '</strong><div style="font-size:9px;">' + (p.rp_name||'—') + ' | ' + (p.player_rank||'гражданский') + '</div></div></div>'; }); document.getElementById('playersList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-    function openPlayerProfile(nickname) { fetch(API + '/players/' + encodeURIComponent(nickname)).then(function(r){ return r.json(); }).then(function(data) { if (!data||!data.player) return; var p = data.player; var html = '<button onclick="closeModal()" style="float:right;">✕</button><h2>👤 ' + p.nickname + '</h2>'; html += '<input type="text" id="editRpName" value="' + (p.rp_name||'') + '" placeholder="RP-имя"><input type="text" id="editRpAge" value="' + (p.rp_age||'') + '" placeholder="Возраст"><input type="text" id="editNotes" value="' + (p.notes||'') + '" placeholder="Заметки">'; html += '<button class="btn btn-primary" onclick="savePlayer(\'' + p.nickname + '\')">💾 Сохранить</button>'; document.getElementById('playerModalContent').innerHTML = html; document.getElementById('playerModal').style.display = 'flex'; }); }
-    function savePlayer(nickname) { var data = {rp_name: document.getElementById('editRpName').value.trim(), rp_age: document.getElementById('editRpAge').value.trim(), notes: document.getElementById('editNotes')?document.getElementById('editNotes').value.trim():''}; fetch(API + '/players/' + encodeURIComponent(nickname), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)}).then(function(){ toast('💾 Сохранено', 'success'); closeModal(); }); }
-    function loadArticlesIntoSelect() { fetch(API + '/articles').then(function(r){ return r.json(); }).then(function(articles) { var sel = document.getElementById('fineArticle'); sel.innerHTML = '<option value="">Без статьи</option>'; articles.forEach(function(a) { var opt = document.createElement('option'); opt.value = a.id; opt.textContent = a.id + ' ' + a.title + ' ($' + a.fine + ')'; sel.appendChild(opt); }); }); }
-    function onArticleSelect() { var id = document.getElementById('fineArticle').value; if (id) fetch(API + '/articles').then(function(r){ return r.json(); }).then(function(articles) { var a = articles.find(function(x){ return x.id === id; }); if (a) document.getElementById('fineReason').value = a.title; }); }
-    function loadArticles() { fetch(API + '/articles').then(function(r){ return r.json(); }).then(function(articles) { var html = ''; articles.forEach(function(a) { html += '<div class="list-item"><div><strong>' + a.id + '</strong> ' + a.title + ' <small>$' + a.fine + '</small></div><button class="btn btn-info btn-sm" onclick="document.getElementById(\'fineArticle\').value=\'' + a.id + '\';onArticleSelect();switchTab(\'fines\')">Выписать</button></div>'; }); document.getElementById('articlesList').innerHTML = html; }); }
-    function loadAnalytics() { fetch(API + '/analytics').then(function(r){ return r.json(); }).then(function(data) { var html = '<h3>🔝 Топ-5 нарушителей</h3>'; data.top_offenders.slice(0,5).forEach(function(o,i) { html += '<div class="list-item"><div><strong>#' + (i+1) + ' 👤 ' + o.nickname + '</strong></div><span>' + o.count + ' штрафов</span></div>'; }); html += '<h3>📅 Штрафы за 30 дней</h3>'; var max = Math.max.apply(null, data.daily_fines.map(function(d){ return d.count; })) || 1; html += '<div style="display:flex;align-items:flex-end;gap:2px;height:80px;">'; data.daily_fines.forEach(function(d) { var h = (d.count/max)*70; html += '<div style="flex:1;background:var(--accent);height:' + h + 'px;border-radius:2px 2px 0 0;" title="' + d.date + ': ' + d.count + '"></div>'; }); html += '</div>'; document.getElementById('analyticsContent').innerHTML = html; }); }
-    function loadAudit() { var type = document.getElementById('auditTypeFilter')?document.getElementById('auditTypeFilter').value:''; fetch(API + '/audit?limit=50&type=' + type).then(function(r){ return r.json(); }).then(function(logs) { var icons = {fine_add:'📋',wanted_add:'🚨',warning_add:'⚠️',warrant_add:'📜',panic:'🚨',detention:'🔒',clear_data:'🧹'}; var html = ''; logs.forEach(function(l) { var dt = new Date(l.timestamp); html += '<div class="list-item"><div><strong>' + (icons[l.action_type]||'📝') + ' #' + l.id + '</strong><small>' + l.description + '</small></div><div style="font-size:8px;">' + l.moderator + ' | ' + dt.toLocaleString('ru-RU') + '</div></div>'; }); document.getElementById('auditList').innerHTML = html || '<p style="color:#888;">Пусто</p>'; }); }
-</script>
+    </script>
 </body>
 </html>
