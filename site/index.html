@@ -41,7 +41,7 @@
            CONTAINER
            ============================================================ */
         .container {
-            max-width: 1400px;
+            max-width: 1200px;
             margin: 0 auto;
         }
 
@@ -247,6 +247,12 @@
             color: #4a6a8a;
         }
 
+        .form-control:disabled,
+        .form-control[readonly] {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
         .form-control option {
             background: #0a1424;
             color: #e0e0e0;
@@ -278,6 +284,7 @@
             transition: all 0.3s;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 8px;
             font-family: inherit;
         }
@@ -360,7 +367,6 @@
 
         .btn-block {
             width: 100%;
-            justify-content: center;
         }
 
         /* ============================================================
@@ -623,34 +629,45 @@
         <div class="grid">
 
             <!-- ============================================================
-            КАРТОЧКА: ШТРАФЫ
+            КАРТОЧКА: ВЫПИСАТЬ ШТРАФ (как на скриншоте)
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">📋</span> Выписать штраф</h3>
+                    <h3>📋 Выписать штраф</h3>
                     <span class="count" id="finesCount">0</span>
                 </div>
 
+                <!-- Roblox ник -->
                 <div class="form-group">
-                    <label>👤 Ник нарушителя (Roblox)</label>
-                    <input type="text" id="fineNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                    <label>Roblox ник</label>
+                    <input type="text" id="fineNickname" class="form-control" placeholder="Введите ник нарушителя...">
                 </div>
 
+                <!-- СТАТЬИ (вместо "Без статьи") -->
                 <div class="form-group">
-                    <label>📋 Статья нарушения</label>
+                    <label>Статья нарушения</label>
                     <select id="fineArticle" class="form-control">
-                        <option value="">-- Выберите статью --</option>
+                        <option value="">-- Без статьи --</option>
+                        <!-- Сюда загрузятся статьи из БД -->
                     </select>
                 </div>
 
+                <!-- Причина -->
                 <div class="form-group">
-                    <label>📝 Дополнительная причина</label>
-                    <input type="text" id="fineReason" class="form-control" placeholder="Или укажите причину вручную..." autocomplete="off">
+                    <label>Причина</label>
+                    <input type="text" id="fineReason" class="form-control" placeholder="Введите причину...">
                 </div>
 
-                <button class="btn btn-primary btn-block" onclick="submitFine()">🚔 Выписать штраф</button>
+                <!-- Ваш бейдж -->
+                <div class="form-group">
+                    <label>Ваш бейдж</label>
+                    <input type="text" id="fineBadge" class="form-control" value="CCPD#0000" readonly>
+                </div>
 
-                <div class="mt-20">
+                <!-- Кнопка -->
+                <button class="btn btn-primary btn-block" onclick="submitFine()">🚔 Выписать</button>
+
+                <div class="mt-15">
                     <div class="flex">
                         <button class="btn btn-outline btn-sm" onclick="loadFines()">🔄 Обновить</button>
                         <button class="btn btn-outline btn-sm" onclick="exportData('fines')">📥 Экспорт</button>
@@ -672,22 +689,22 @@
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">🚨</span> Объявить в розыск</h3>
+                    <h3>🚨 Объявить в розыск</h3>
                     <span class="count" id="wantedCount">0</span>
                 </div>
 
                 <div class="form-group">
-                    <label>👤 Ник разыскиваемого</label>
-                    <input type="text" id="wantedNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                    <label>Roblox ник</label>
+                    <input type="text" id="wantedNickname" class="form-control" placeholder="Введите ник...">
                 </div>
 
                 <div class="form-group">
-                    <label>📋 Причина</label>
-                    <input type="text" id="wantedReason" class="form-control" placeholder="Причина розыска..." autocomplete="off">
+                    <label>Причина</label>
+                    <input type="text" id="wantedReason" class="form-control" placeholder="Причина розыска...">
                 </div>
 
                 <div class="form-group">
-                    <label>⚠️ Уровень опасности</label>
+                    <label>Уровень опасности</label>
                     <select id="wantedStars" class="form-control">
                         <option value="1">⭐ Низкая</option>
                         <option value="2">⭐⭐ Средняя</option>
@@ -697,7 +714,12 @@
                     </select>
                 </div>
 
-                <button class="btn btn-danger btn-block" onclick="submitWanted()">🚨 Объявить в розыск</button>
+                <div class="form-group">
+                    <label>Ваш бейдж</label>
+                    <input type="text" id="wantedBadge" class="form-control" value="CCPD#0000" readonly>
+                </div>
+
+                <button class="btn btn-danger btn-block" onclick="submitWanted()">🚨 Объявить</button>
 
                 <div class="mt-20">
                     <div class="flex">
@@ -727,21 +749,26 @@
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">⚠️</span> Предупреждения</h3>
+                    <h3>⚠️ Предупреждения</h3>
                     <span class="count" id="warningsCount">0</span>
                 </div>
 
                 <div class="form-group">
-                    <label>👤 Ник игрока</label>
-                    <input type="text" id="warningNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                    <label>Roblox ник</label>
+                    <input type="text" id="warningNickname" class="form-control" placeholder="Введите ник...">
                 </div>
 
                 <div class="form-group">
-                    <label>📋 Причина</label>
-                    <input type="text" id="warningReason" class="form-control" placeholder="Причина предупреждения..." autocomplete="off">
+                    <label>Причина</label>
+                    <input type="text" id="warningReason" class="form-control" placeholder="Причина предупреждения...">
                 </div>
 
-                <button class="btn btn-warning btn-block" onclick="submitWarning()">⚠️ Выдать предупреждение</button>
+                <div class="form-group">
+                    <label>Ваш бейдж</label>
+                    <input type="text" id="warningBadge" class="form-control" value="CCPD#0000" readonly>
+                </div>
+
+                <button class="btn btn-warning btn-block" onclick="submitWarning()">⚠️ Выдать</button>
 
                 <div class="mt-15">
                     <div id="warningsList">
@@ -758,17 +785,17 @@
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">📝</span> Ордера</h3>
+                    <h3>📝 Ордера</h3>
                     <span class="count" id="warrantsCount">0</span>
                 </div>
 
                 <div class="form-group">
-                    <label>👤 Ник игрока</label>
-                    <input type="text" id="warrantNickname" class="form-control" placeholder="Введите ник..." autocomplete="off">
+                    <label>Roblox ник</label>
+                    <input type="text" id="warrantNickname" class="form-control" placeholder="Введите ник...">
                 </div>
 
                 <div class="form-group">
-                    <label>📋 Тип ордера</label>
+                    <label>Тип ордера</label>
                     <select id="warrantType" class="form-control">
                         <option value="search">🔍 Обыск</option>
                         <option value="arrest">🔗 Арест</option>
@@ -777,11 +804,16 @@
                 </div>
 
                 <div class="form-group">
-                    <label>📝 Причина</label>
-                    <input type="text" id="warrantReason" class="form-control" placeholder="Причина ордера..." autocomplete="off">
+                    <label>Причина</label>
+                    <input type="text" id="warrantReason" class="form-control" placeholder="Причина ордера...">
                 </div>
 
-                <button class="btn btn-purple btn-block" onclick="submitWarrant()">📝 Выдать ордер</button>
+                <div class="form-group">
+                    <label>Ваш бейдж</label>
+                    <input type="text" id="warrantBadge" class="form-control" value="CCPD#0000" readonly>
+                </div>
+
+                <button class="btn btn-purple btn-block" onclick="submitWarrant()">📝 Выдать</button>
 
                 <div class="mt-15">
                     <div id="warrantsList">
@@ -798,31 +830,31 @@
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">🚗</span> Транспорт</h3>
+                    <h3>🚗 Транспорт</h3>
                     <span class="count" id="vehiclesCount">0</span>
                 </div>
 
                 <div class="form-group">
-                    <label>🚗 Госномер</label>
-                    <input type="text" id="vehiclePlate" class="form-control" placeholder="A123BC" autocomplete="off" style="text-transform: uppercase;">
+                    <label>Госномер</label>
+                    <input type="text" id="vehiclePlate" class="form-control" placeholder="A123BC" style="text-transform: uppercase;">
                 </div>
 
                 <div class="form-group">
-                    <label>📋 Модель</label>
-                    <input type="text" id="vehicleModel" class="form-control" placeholder="Модель авто..." autocomplete="off">
+                    <label>Модель</label>
+                    <input type="text" id="vehicleModel" class="form-control" placeholder="Модель авто...">
                 </div>
 
                 <div class="form-group">
-                    <label>👤 Владелец (ник)</label>
-                    <input type="text" id="vehicleOwner" class="form-control" placeholder="Ник владельца..." autocomplete="off">
+                    <label>Владелец (ник)</label>
+                    <input type="text" id="vehicleOwner" class="form-control" placeholder="Ник владельца...">
                 </div>
 
                 <div class="form-group">
-                    <label>🎨 Цвет</label>
-                    <input type="text" id="vehicleColor" class="form-control" placeholder="Цвет..." autocomplete="off">
+                    <label>Цвет</label>
+                    <input type="text" id="vehicleColor" class="form-control" placeholder="Цвет...">
                 </div>
 
-                <button class="btn btn-success btn-block" onclick="submitVehicle()">🚗 Зарегистрировать ТС</button>
+                <button class="btn btn-success btn-block" onclick="submitVehicle()">🚗 Зарегистрировать</button>
 
                 <div class="mt-15">
                     <div class="flex">
@@ -852,19 +884,24 @@
             ============================================================ -->
             <div class="card" style="border-color: #c62828;">
                 <div class="card-header">
-                    <h3 style="color: #f44336;"><span class="icon">🚨</span> Тревожная кнопка</h3>
+                    <h3 style="color: #f44336;">🚨 Тревожная кнопка</h3>
                 </div>
 
                 <div class="form-group">
                     <label>📍 Локация</label>
-                    <input type="text" id="panicLocation" class="form-control" placeholder="Укажите место..." autocomplete="off">
+                    <input type="text" id="panicLocation" class="form-control" placeholder="Укажите место...">
+                </div>
+
+                <div class="form-group">
+                    <label>Ваш бейдж</label>
+                    <input type="text" id="panicBadge" class="form-control" value="CCPD#0000" readonly>
                 </div>
 
                 <button class="btn btn-danger btn-block" onclick="submitPanic()" style="font-size: 20px; padding: 15px;">
                     🚨 ТРЕВОГА!
                 </button>
 
-                <div class="mt-15 text-muted text-center" style="font-size: 12px;">
+                <div class="mt-10 text-muted text-center" style="font-size: 12px;">
                     Отправит экстренный вызов всем офицерам
                 </div>
             </div>
@@ -874,7 +911,7 @@
             ============================================================ -->
             <div class="card">
                 <div class="card-header">
-                    <h3><span class="icon">📊</span> Аналитика</h3>
+                    <h3>📊 Аналитика</h3>
                     <button class="btn btn-outline btn-xs" onclick="loadAnalytics()">🔄</button>
                 </div>
 
@@ -963,7 +1000,7 @@
                 const select = document.getElementById('fineArticle');
                 if (!select) return;
 
-                select.innerHTML = '<option value="">-- Выберите статью --</option>';
+                select.innerHTML = '<option value="">-- Без статьи --</option>';
 
                 articles.forEach(article => {
                     const option = document.createElement('option');
@@ -1264,7 +1301,6 @@
 
                 let html = '';
 
-                // Топ нарушителей
                 if (data.top_offenders && data.top_offenders.length > 0) {
                     html += `<div style="margin-bottom:12px;">
                         <div style="color:#8ab4d6; font-size:13px; margin-bottom:4px;">🏆 Топ нарушителей:</div>
@@ -1276,7 +1312,6 @@
                     html += `</div></div>`;
                 }
 
-                // Топ офицеров
                 if (data.top_officers && data.top_officers.length > 0) {
                     html += `<div style="margin-bottom:12px;">
                         <div style="color:#8ab4d6; font-size:13px; margin-bottom:4px;">👮 Топ офицеров:</div>
@@ -1288,7 +1323,6 @@
                     html += `</div></div>`;
                 }
 
-                // Итоги
                 if (data.summary) {
                     html += `<div style="display:flex; flex-wrap:wrap; gap:12px; margin-top:8px; font-size:13px;">
                         <span>📋 <strong>${data.summary.total_fines}</strong> штрафов</span>
@@ -1321,6 +1355,7 @@
             const nickname = document.getElementById('fineNickname').value.trim();
             const article = document.getElementById('fineArticle').value;
             const reason = document.getElementById('fineReason').value.trim();
+            const badge = document.getElementById('fineBadge').value.trim() || 'CCPD#0000';
 
             if (!nickname) {
                 showToast('❌ Введите ник нарушителя!', 'error');
@@ -1343,7 +1378,7 @@
                 nickname: nickname,
                 reason: finalReason,
                 article: article || '',
-                issued_by: currentOfficer.badge || 'CCPD#0000',
+                issued_by: badge,
                 time: new Date().toLocaleTimeString()
             };
 
@@ -1378,6 +1413,7 @@
             const nickname = document.getElementById('wantedNickname').value.trim();
             const reason = document.getElementById('wantedReason').value.trim();
             const stars = parseInt(document.getElementById('wantedStars').value);
+            const badge = document.getElementById('wantedBadge').value.trim() || 'CCPD#0000';
 
             if (!nickname || !reason) {
                 showToast('❌ Заполните все поля!', 'error');
@@ -1388,7 +1424,7 @@
                 nickname: nickname,
                 reason: reason,
                 stars: stars,
-                issued_by: currentOfficer.badge || 'CCPD#0000'
+                issued_by: badge
             };
 
             try {
@@ -1420,6 +1456,7 @@
         async function submitWarning() {
             const nickname = document.getElementById('warningNickname').value.trim();
             const reason = document.getElementById('warningReason').value.trim();
+            const badge = document.getElementById('warningBadge').value.trim() || 'CCPD#0000';
 
             if (!nickname || !reason) {
                 showToast('❌ Заполните все поля!', 'error');
@@ -1429,7 +1466,7 @@
             const data = {
                 nickname: nickname,
                 reason: reason,
-                issued_by: currentOfficer.badge || 'CCPD#0000'
+                issued_by: badge
             };
 
             try {
@@ -1466,6 +1503,7 @@
             const nickname = document.getElementById('warrantNickname').value.trim();
             const type = document.getElementById('warrantType').value;
             const reason = document.getElementById('warrantReason').value.trim();
+            const badge = document.getElementById('warrantBadge').value.trim() || 'CCPD#0000';
 
             if (!nickname || !reason) {
                 showToast('❌ Заполните все поля!', 'error');
@@ -1476,7 +1514,7 @@
                 nickname: nickname,
                 type: type,
                 reason: reason,
-                issued_by: currentOfficer.badge || 'CCPD#0000'
+                issued_by: badge
             };
 
             try {
@@ -1553,11 +1591,12 @@
         // ============================================================
         async function submitPanic() {
             const location = document.getElementById('panicLocation').value.trim() || 'Не указано';
+            const badge = document.getElementById('panicBadge').value.trim() || 'CCPD#0000';
 
             if (!confirm('🚨 Отправить сигнал тревоги всем офицерам?')) return;
 
             const data = {
-                officer: currentOfficer.badge || 'CCPD#0000',
+                officer: badge,
                 location: location
             };
 
@@ -1679,7 +1718,6 @@
         // АВТОРИЗАЦИЯ
         // ============================================================
         async function checkAuth() {
-            // Попытка восстановить сессию
             try {
                 const saved = localStorage.getItem('ccsv3_officer');
                 if (saved) {
@@ -1687,6 +1725,13 @@
                     currentOfficer = officer;
                     document.getElementById('officerBadge').textContent = officer.badge || 'CCPD#0000';
                     document.getElementById('officerRank').textContent = officer.rank || 'Кадет';
+
+                    // Обновляем все поля с бейджем
+                    document.querySelectorAll('[id$="Badge"]').forEach(el => {
+                        if (el.id !== 'officerBadge' && el.id !== 'officerRank') {
+                            el.value = officer.badge || 'CCPD#0000';
+                        }
+                    });
                 }
             } catch (e) { /* ignore */ }
         }
